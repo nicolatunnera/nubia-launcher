@@ -1,0 +1,65 @@
+<resources>
+
+    <!-- ===== Tema base (chiaro) ===== -->
+    <style name="Theme.NubiaLauncher" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/scrim_nav</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="colorPrimary">@color/accent_default</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_default</item>
+    </style>
+
+    <!-- ===== Tema base (scuro) ===== -->
+    <style name="Theme.NubiaLauncher.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/scrim_nav</item>
+        <item name="colorPrimary">@color/accent_default</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_default</item>
+    </style>
+
+    <!-- ===== Overlay colori accento (applicati a runtime) ===== -->
+    <style name="ThemeOverlay.Accent.Default" parent="">
+        <item name="colorPrimary">@color/accent_default</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_default</item>
+    </style>
+    <style name="ThemeOverlay.Accent.Blue" parent="">
+        <item name="colorPrimary">@color/accent_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_blue</item>
+    </style>
+    <style name="ThemeOverlay.Accent.Purple" parent="">
+        <item name="colorPrimary">@color/accent_purple</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_purple</item>
+    </style>
+    <style name="ThemeOverlay.Accent.Red" parent="">
+        <item name="colorPrimary">@color/accent_red</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_red</item>
+    </style>
+    <style name="ThemeOverlay.Accent.Green" parent="">
+        <item name="colorPrimary">@color/accent_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_green</item>
+    </style>
+    <style name="ThemeOverlay.Accent.Orange" parent="">
+        <item name="colorPrimary">@color/accent_orange</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_orange</item>
+    </style>
+    <style name="ThemeOverlay.Accent.Pink" parent="">
+        <item name="colorPrimary">@color/accent_pink</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_pink</item>
+    </style>
+
+</resources>

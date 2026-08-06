@@ -1,0 +1,72 @@
+<resources>
+
+    <string-array name="theme_entries">
+        <item>Automatico</item>
+        <item>Chiaro</item>
+        <item>Scuro</item>
+    </string-array>
+    <string-array name="theme_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="accent_entries">
+        <item>Verde acqua</item>
+        <item>Blu</item>
+        <item>Viola</item>
+        <item>Rosso</item>
+        <item>Verde</item>
+        <item>Arancione</item>
+        <item>Rosa</item>
+    </string-array>
+    <string-array name="accent_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+
+    <string-array name="grid_columns_values">
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+    <string-array name="grid_columns_entries">
+        <item>3 colonne</item>
+        <item>4 colonne</item>
+        <item>5 colonne</item>
+        <item>6 colonne</item>
+    </string-array>
+
+    <string-array name="grid_rows_values">
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+    <string-array name="grid_rows_entries">
+        <item>4 righe</item>
+        <item>5 righe</item>
+        <item>6 righe</item>
+        <item>7 righe</item>
+        <item>8 righe</item>
+    </string-array>
+
+    <string-array name="pages_values">
+        <item>1</item>
+        <item>3</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="pages_entries">
+        <item>1 pagina</item>
+        <item>3 pagine</item>
+        <item>5 pagine</item>
+    </string-array>
+
+</resources>

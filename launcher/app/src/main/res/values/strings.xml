@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">Nubia Launcher</string>
+    <string name="settings_title">Personalizzazione</string>
+
+    <!-- Drawer / ricerca -->
+    <string name="search_hint">Cerca app…</string>
+    <string name="drawer_closed">Apri cassetto app</string>
+    <string name="drawer_empty">Nessuna app trovata</string>
+
+    <!-- Impostazioni: categorie -->
+    <string name="category_layout">Layout</string>
+    <string name="category_appearance">Aspetto</string>
+    <string name="category_behavior">Comportamento</string>
+    <string name="category_wallpaper">Sfondo</string>
+    <string name="category_about">Informazioni</string>
+
+    <!-- Impostazioni: layout -->
+    <string name="pref_columns_title">Colonne della griglia</string>
+    <string name="pref_columns_summary">Numero di colonne nella schermata home</string>
+    <string name="pref_rows_title">Righe della griglia</string>
+    <string name="pref_rows_summary">Numero di righe nella schermata home</string>
+    <string name="pref_icon_size_title">Dimensione icone home</string>
+    <string name="pref_icon_size_summary">Dimensione delle icone nella schermata home</string>
+    <string name="pref_dock_icon_size_title">Dimensione icone dock</string>
+    <string name="pref_dock_icon_size_summary">Dimensione delle icone nella barra dock</string>
+    <string name="pref_pages_title">Numero di pagine</string>
+    <string name="pref_pages_summary">Pagine della schermata home</string>
+
+    <!-- Impostazioni: aspetto -->
+    <string name="pref_theme_title">Tema</string>
+    <string name="pref_theme_summary">Scegli tra tema chiaro, scuro o automatico</string>
+    <string name="pref_theme_system">Automatico</string>
+    <string name="pref_theme_light">Chiaro</string>
+    <string name="pref_theme_dark">Scuro</string>
+    <string name="pref_accent_title">Colore accento</string>
+    <string name="pref_accent_summary">Colore principale del launcher</string>
+    <string name="pref_labels_title">Mostra nomi app</string>
+    <string name="pref_labels_summary">Visualizza il nome sotto le icone</string>
+    <string name="pref_label_size_title">Dimensione testo nomi</string>
+    <string name="pref_label_size_summary">Dimensione del nome sotto le icone</string>
+
+    <!-- Impostazioni: comportamento -->
+    <string name="pref_gesture_drawer_title">Swipe up apre il cassetto</string>
+    <string name="pref_gesture_drawer_summary">Apri il cassetto app scorrendo verso l&#8217;alto dalla home</string>
+    <string name="pref_clock_title">Mostra orologio</string>
+    <string name="pref_clock_summary">Orologio e data in alto nella schermata home</string>
+
+    <!-- Impostazioni: sfondo -->
+    <string name="pref_wallpaper_title">Scegli sfondo</string>
+    <string name="pref_wallpaper_summary">Apri il selettore sfondo del sistema</string>
+
+    <!-- Impostazioni: about -->
+    <string name="pref_about_version">Versione</string>
+    <string name="pref_about_build">Launcher open source per Nubia ZTE Air</string>
+
+    <!-- Long press -->
+    <string name="menu_add_widget">Aggiungi widget</string>
+    <string name="menu_settings">Impostazioni</string>
+    <string name="menu_wallpaper">Sfondo</string>
+    <string name="menu_add_shortcut">Crea scorciatoia</string>
+    <string name="menu_remove">Rimuovi</string>
+    <string name="toast_shortcut_created">Scorciatoia creata</string>
+    <string name="toast_removed">Rimosso</string>
+
+    <!-- Widget -->
+    <string name="widget_host_title">Nubia Launcher (Widget)</string>
+</resources>

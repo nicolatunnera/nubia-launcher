@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="category_layout"
+        android:title="@string/category_layout">
+
+        <ListPreference
+            android:key="grid_columns"
+            android:title="@string/pref_columns_title"
+            android:summary="@string/pref_columns_summary"
+            android:entries="@array/grid_columns_entries"
+            android:entryValues="@array/grid_columns_values"
+            android:defaultValue="4" />
+
+        <ListPreference
+            android:key="grid_rows"
+            android:title="@string/pref_rows_title"
+            android:summary="@string/pref_rows_summary"
+            android:entries="@array/grid_rows_entries"
+            android:entryValues="@array/grid_rows_values"
+            android:defaultValue="6" />
+
+        <ListPreference
+            android:key="pages"
+            android:title="@string/pref_pages_title"
+            android:summary="@string/pref_pages_summary"
+            android:entries="@array/pages_entries"
+            android:entryValues="@array/pages_values"
+            android:defaultValue="3" />
+
+        <SeekBarPreference
+            android:key="icon_size"
+            android:title="@string/pref_icon_size_title"
+            android:summary="@string/pref_icon_size_summary"
+            android:defaultValue="52"
+            android:min="36"
+            android:max="80" />
+
+        <SeekBarPreference
+            android:key="dock_icon_size"
+            android:title="@string/pref_dock_icon_size_title"
+            android:summary="@string/pref_dock_icon_size_summary"
+            android:defaultValue="56"
+            android:min="40"
+            android:max="80" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_appearance"
+        android:title="@string/category_appearance">
+
+        <ListPreference
+            android:key="dark_mode"
+            android:title="@string/pref_theme_title"
+            android:summary="@string/pref_theme_summary"
+            android:entries="@array/theme_entries"
+            android:entryValues="@array/theme_values"
+            android:defaultValue="0" />
+
+        <ListPreference
+            android:key="accent"
+            android:title="@string/pref_accent_title"
+            android:summary="@string/pref_accent_summary"
+            android:entries="@array/accent_entries"
+            android:entryValues="@array/accent_values"
+            android:defaultValue="0" />
+
+        <SwitchPreferenceCompat
+            android:key="show_labels"
+            android:title="@string/pref_labels_title"
+            android:summary="@string/pref_labels_summary"
+            android:defaultValue="true" />
+
+        <SeekBarPreference
+            android:key="label_size"
+            android:title="@string/pref_label_size_title"
+            android:summary="@string/pref_label_size_summary"
+            android:defaultValue="11"
+            android:min="8"
+            android:max="16" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_behavior"
+        android:title="@string/category_behavior">
+
+        <SwitchPreferenceCompat
+            android:key="gesture_drawer"
+            android:title="@string/pref_gesture_drawer_title"
+            android:summary="@string/pref_gesture_drawer_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="show_clock"
+            android:title="@string/pref_clock_title"
+            android:summary="@string/pref_clock_summary"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_wallpaper"
+        android:title="@string/category_wallpaper">
+
+        <Preference
+            android:key="wallpaper"
+            android:title="@string/pref_wallpaper_title"
+            android:summary="@string/pref_wallpaper_summary"
+            android:icon="@drawable/ic_wallpaper" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_about"
+        android:title="@string/category_about">
+
+        <Preference
+            android:key="about_version"
+            android:title="@string/pref_about_version"
+            android:summary="@string/pref_about_build" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
