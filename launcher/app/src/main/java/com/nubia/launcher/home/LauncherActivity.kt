@@ -403,7 +403,6 @@ class LauncherActivity : AppCompatActivity() {
         try {
             val tv = android.widget.TextView(this).apply {
                 this.text = text
-                textIsSelectable = true
                 setTextIsSelectable(true)
                 setPadding(dp(16), dp(12), dp(16), dp(12))
             }
