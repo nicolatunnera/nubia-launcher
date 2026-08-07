@@ -32,6 +32,7 @@ import com.nubia.launcher.settings.SettingsActivity
 import com.nubia.launcher.theme.ThemeManager
 import com.nubia.launcher.util.ShortcutUtils
 import com.nubia.launcher.widget.WidgetManager
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -66,6 +67,7 @@ class LauncherActivity : AppCompatActivity() {
         ThemeManager.apply(this, settings.get())
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+        showCrashReportIfPresent()
 
         binding = ActivityLauncherBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -359,6 +361,21 @@ class LauncherActivity : AppCompatActivity() {
     // -------------------------------------------------------------- helpers
 
     private fun dp(value: Int): Int = (resources.displayMetrics.density * value).toInt()
+
+    /** Se c'è un crash.log (da un avvio fallito) lo mostra e lo cancella. */
+    private fun showCrashReportIfPresent() {
+        val dir = getExternalFilesDir(null) ?: filesDir
+        val file = File(dir, "crash.log")
+        if (!file.exists()) return
+        val text = try { file.readText() } catch (_: Exception) { return }
+        file.delete()
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Errore all'avvio")
+            .setMessage(text.take(2000))
+            .setPositiveButton("OK", null)
+            .setCancelable(false)
+            .show()
+    }
 
     companion object {
         private const val REQUEST_PICK_WIDGET = 1001
