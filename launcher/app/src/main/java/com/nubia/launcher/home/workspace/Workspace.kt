@@ -75,6 +75,10 @@ class Workspace @JvmOverloads constructor(
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageHolder {
             val cell = CellLayout(parent.context)
+            cell.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             cell.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             return PageHolder(cell)
         }
