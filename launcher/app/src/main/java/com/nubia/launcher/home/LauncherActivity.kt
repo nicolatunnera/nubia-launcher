@@ -52,6 +52,8 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var widgetManager: WidgetManager
     private lateinit var gestureController: GestureController
 
+    private var homeReady = false
+
     private val clockFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     private val dateFormatter = SimpleDateFormat("EEEE d MMMM", Locale.getDefault())
 
@@ -105,6 +107,8 @@ class LauncherActivity : AppCompatActivity() {
             setupClock()
             setupBack()
 
+            homeReady = true
+
             lifecycleScope.launch { appManager.load() }
             lifecycleScope.launch { appManager.apps.collect(::onAppsChanged) }
             lifecycleScope.launch { settings.settings.collect(::onSettingsChanged) }
@@ -123,17 +127,17 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        widgetManager.startListening()
+        if (homeReady) widgetManager.startListening()
     }
 
     override fun onStop() {
         super.onStop()
-        widgetManager.stopListening()
+        if (homeReady) widgetManager.stopListening()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        widgetManager.close()
+        if (homeReady) widgetManager.close()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
