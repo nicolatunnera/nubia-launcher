@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+val signingKeystore = rootProject.file("keystore.jks")
+val hasSigningKeystore = signingKeystore.exists()
+
 android {
     namespace = "com.nubia.launcher"
     compileSdk = 35
@@ -15,7 +18,21 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (hasSigningKeystore) {
+            create("stable") {
+                storeFile = signingKeystore
+                storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: "Launcher2026!"
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: "launcher"
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: "Launcher2026!"
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            if (hasSigningKeystore) signingConfig = signingConfigs.getByName("stable")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
