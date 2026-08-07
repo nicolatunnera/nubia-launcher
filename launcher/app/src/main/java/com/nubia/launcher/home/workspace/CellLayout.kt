@@ -30,8 +30,10 @@ class CellLayout @JvmOverloads constructor(
             }
         }
 
-    class GridLayoutParams : LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT) {
+    class GridLayoutParams : LayoutParams {
         var index: Int = 0
+
+        constructor() : super(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
         constructor(index: Int) : this() {
             this.index = index

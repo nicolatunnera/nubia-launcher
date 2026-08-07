@@ -58,7 +58,6 @@ class WidgetManager(private val context: Context) {
 
     fun close() {
         widgetHost.stopListening()
-        widgetHost.clearViews()
     }
 
     companion object {

@@ -70,7 +70,7 @@ class DockView @JvmOverloads constructor(
             px + if (showLabels) dp(18) else 0
         )
         view.setOnClickListener { onItemClick?.invoke(app) }
-        view.setOnLongClickListener { onItemLongClick?.invoke(app, it) }
+        view.setOnLongClickListener { onItemLongClick?.invoke(app, it) ?: true }
         view.background = context.getDrawable(R.drawable.bg_cell)
         return view
     }

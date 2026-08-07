@@ -9,5 +9,6 @@ data class AppInfo(
     val label: String,
     val icon: Drawable
 ) {
+    val packageName: String get() = component.packageName
     val key: String get() = component.flattenToString()
 }
