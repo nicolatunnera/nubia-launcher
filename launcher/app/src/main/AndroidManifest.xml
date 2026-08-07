@@ -51,6 +51,12 @@
             android:name=".settings.SettingsActivity"
             android:exported="false"
             android:label="@string/settings_title" />
+
+        <!-- Pagina di segnalazione errori (tema di sistema: non può fallire) -->
+        <activity
+            android:name=".CrashReportActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.DeviceDefault.Light" />
     </application>
 
 </manifest>

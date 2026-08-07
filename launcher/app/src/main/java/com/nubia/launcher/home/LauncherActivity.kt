@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.nubia.launcher.CrashReportActivity
 import com.nubia.launcher.LauncherApplication
 import com.nubia.launcher.R
 import com.nubia.launcher.databinding.ActivityLauncherBinding
@@ -61,8 +62,19 @@ class LauncherActivity : AppCompatActivity() {
     private var lastGrid: Pair<Int, Int>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (showCrashReportIfPresent()) {
-            super.onCreate(savedInstanceState)
+        if (crashReportExists()) {
+            try {
+                super.onCreate(savedInstanceState)
+            } catch (_: Throwable) {
+            }
+            try {
+                startActivity(Intent(this, CrashReportActivity::class.java))
+            } catch (_: Throwable) {
+            }
+            try {
+                finish()
+            } catch (_: Throwable) {
+            }
             return
         }
 
@@ -97,12 +109,15 @@ class LauncherActivity : AppCompatActivity() {
             lifecycleScope.launch { appManager.apps.collect(::onAppsChanged) }
             lifecycleScope.launch { settings.settings.collect(::onSettingsChanged) }
         } catch (t: Throwable) {
+            saveCrash(t)
             try {
-                super.onCreate(savedInstanceState)
+                startActivity(Intent(this, CrashReportActivity::class.java))
             } catch (_: Throwable) {
             }
-            saveCrash(t)
-            showCrashDialog(t.stackTraceToString())
+            try {
+                finish()
+            } catch (_: Throwable) {
+            }
         }
     }
 
@@ -377,15 +392,14 @@ class LauncherActivity : AppCompatActivity() {
 
     private fun dp(value: Int): Int = (resources.displayMetrics.density * value).toInt()
 
-    /** Se c'è un crash.log (da un avvio fallito) lo mostra e blocca l'avvio. */
-    private fun showCrashReportIfPresent(): Boolean {
-        val dir = getExternalFilesDir(null) ?: filesDir
-        val file = File(dir, "crash.log")
-        if (!file.exists()) return false
-        val text = try { file.readText() } catch (_: Exception) { return false }
-        file.delete()
-        showCrashDialog(text)
-        return true
+    /** Vero se esiste un errore registrato da un avvio precedente. */
+    private fun crashReportExists(): Boolean {
+        return try {
+            val dir = getExternalFilesDir(null) ?: filesDir
+            File(dir, "crash.log").exists()
+        } catch (_: Throwable) {
+            false
+        }
     }
 
     private fun saveCrash(t: Throwable) {
@@ -395,24 +409,6 @@ class LauncherActivity : AppCompatActivity() {
                 writer.println("=== Crash ${System.currentTimeMillis()} ===")
                 t.printStackTrace(writer)
             }
-        } catch (_: Throwable) {
-        }
-    }
-
-    private fun showCrashDialog(text: String) {
-        try {
-            val tv = android.widget.TextView(this).apply {
-                this.text = text
-                setTextIsSelectable(true)
-                setPadding(dp(16), dp(12), dp(16), dp(12))
-            }
-            val sv = android.widget.ScrollView(this).apply { addView(tv) }
-            android.app.AlertDialog.Builder(this)
-                .setTitle("Errore all'avvio")
-                .setView(sv)
-                .setPositiveButton("OK", null)
-                .setCancelable(false)
-                .show()
         } catch (_: Throwable) {
         }
     }
