@@ -39,3 +39,9 @@ jobs:
           name: nubia-launcher-apk
           path: launcher/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      - name: Publish Release (latest)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create latest --repo nicolatunnera/nubia-launcher --title "Nubia Launcher - ultima build" --notes "APK aggiornato automaticamente a ogni build. Scarica e installa direttamente dal telefono." app/build/outputs/apk/debug/app-debug.apk --force
