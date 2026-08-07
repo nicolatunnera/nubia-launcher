@@ -46,11 +46,12 @@ class GestureController(context: Context) {
     })
 
     /**
-     * Aggancia il riconoscimento a una vista. Il listener non consuma
-     * gli eventi, quindi non interferisce con tocchi e swipe dei figli.
+     * Inoltra un evento al riconoscitore. Va chiamato dall'Activity in
+     * [android.app.Activity.dispatchTouchEvent], così lo swipe viene
+     * visto anche quando il tocco parte sopra icone o liste.
      */
-    fun attachTo(view: View) {
-        view.setOnTouchListener { _, event -> detector.onTouchEvent(event); false }
+    fun dispatch(event: MotionEvent) {
+        detector.onTouchEvent(event)
     }
 
     companion object {

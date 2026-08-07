@@ -20,6 +20,7 @@ class DockView @JvmOverloads constructor(
 
     var onItemClick: ((AppInfo) -> Unit)? = null
     var onItemLongClick: ((AppInfo, View) -> Boolean)? = null
+    var onDrawerClick: (() -> Unit)? = null
 
     init {
         orientation = HORIZONTAL
@@ -31,11 +32,13 @@ class DockView @JvmOverloads constructor(
         apps.take(MAX_ITEMS).forEach { app ->
             addView(createItem(app, iconSizeDp, showLabels))
         }
+        addView(createDrawerButton(iconSizeDp))
     }
 
     fun applyIconSettings(iconSizeDp: Int, showLabels: Boolean) {
         for (i in 0 until childCount) {
             val child = getChildAt(i)
+            if (child.tag == TAG_DRAWER) continue
             val icon = child.findViewById<ImageView>(R.id.dockIcon) ?: continue
             val label = child.findViewById<TextView>(R.id.dockLabel)
             val px = (context.resources.displayMetrics.density * iconSizeDp).toInt()
@@ -75,10 +78,25 @@ class DockView @JvmOverloads constructor(
         return view
     }
 
+    private fun createDrawerButton(iconSizeDp: Int): View {
+        val px = (context.resources.displayMetrics.density * iconSizeDp).toInt()
+        val size = (context.resources.displayMetrics.density * (iconSizeDp - 10)).toInt()
+        return ImageView(context).apply {
+            tag = TAG_DRAWER
+            setImageResource(R.drawable.ic_drawer)
+            contentDescription = "Tutte le app"
+            layoutParams = LayoutParams(px, px)
+            setPadding(size / 4, size / 4, size / 4, size / 4)
+            setOnClickListener { onDrawerClick?.invoke() }
+            background = context.getDrawable(R.drawable.bg_cell)
+        }
+    }
+
     private fun dp(value: Int): Int = (context.resources.displayMetrics.density * value).toInt()
 
     companion object {
         private const val MAX_ITEMS = 5
+        private const val TAG_DRAWER = "dock_drawer"
 
         private val DEFAULT_PACKAGES = listOf(
             "com.android.dialer", "com.google.android.dialer",

@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
@@ -177,17 +178,25 @@ class LauncherActivity : AppCompatActivity() {
             showDockMenu(app, view)
             true
         }
+        binding.dock.onDrawerClick = { openDrawer() }
     }
 
     private fun setupGestures() {
         gestureController = GestureController(this)
-        gestureController.onSwipeUp = { openDrawer() }
-        gestureController.attachTo(binding.root)
+        gestureController.onSwipeUp = {
+            if (settings.get().gestureDrawer) openDrawer()
+        }
 
         binding.root.setOnLongClickListener {
             showEmptyMenu(it)
             true
         }
+    }
+
+    /** Inoltra tutti i tocchi al riconoscitore gesti (vede anche i tocchi sulle icone). */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (::gestureController.isInitialized) gestureController.dispatch(ev)
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun setupClock() {
@@ -297,7 +306,6 @@ class LauncherActivity : AppCompatActivity() {
     }
 
     private fun openDrawer() {
-        if (!settings.get().gestureDrawer) return
         if (supportFragmentManager.findFragmentByTag(AllAppsFragment.TAG) != null) return
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(

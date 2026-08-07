@@ -17,8 +17,8 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingTop="48dp"
-            android:paddingBottom="12dp">
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp">
 
             <TextView
                 android:id="@+id/clockText"
@@ -28,7 +28,7 @@
                 android:shadowColor="@color/label_shadow"
                 android:shadowDx="0"
                 android:shadowDy="1"
-                android:shadowRadius="4"
+                android:shadowRadius="5"
                 android:textColor="@android:color/white"
                 android:textSize="56sp" />
 
@@ -39,8 +39,8 @@
                 android:shadowColor="@color/label_shadow"
                 android:shadowDx="0"
                 android:shadowDy="1"
-                android:shadowRadius="4"
-                android:textColor="#DDFFFFFF"
+                android:shadowRadius="5"
+                android:textColor="#E6FFFFFF"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -64,8 +64,22 @@
         <com.nubia.launcher.home.dock.DockView
             android:id="@+id/dock"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_dock"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
     </LinearLayout>
+
+    <!-- Scrim sfumato in alto per la leggibilità dell'orologio -->
+    <View
+        android:id="@+id/topScrim"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_scrim_top" />
 
     <!-- Scrim sfumato sotto per leggibilità -->
     <View
