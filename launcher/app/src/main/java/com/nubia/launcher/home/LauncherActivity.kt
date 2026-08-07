@@ -33,6 +33,7 @@ import com.nubia.launcher.theme.ThemeManager
 import com.nubia.launcher.util.ShortcutUtils
 import com.nubia.launcher.widget.WidgetManager
 import java.io.File
+import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -60,35 +61,49 @@ class LauncherActivity : AppCompatActivity() {
     private var lastGrid: Pair<Int, Int>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val app = application as LauncherApplication
-        settings = app.settings
-        appManager = app.appManager
-
-        ThemeManager.apply(this, settings.get())
-        super.onCreate(savedInstanceState)
-        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
-        showCrashReportIfPresent()
-
-        binding = ActivityLauncherBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        widgetManager = WidgetManager(this)
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
+        if (showCrashReportIfPresent()) {
+            super.onCreate(savedInstanceState)
+            return
         }
 
-        setupWorkspace()
-        setupDock()
-        setupGestures()
-        setupClock()
-        setupBack()
+        try {
+            val app = application as LauncherApplication
+            settings = app.settings
+            appManager = app.appManager
 
-        lifecycleScope.launch { appManager.load() }
-        lifecycleScope.launch { appManager.apps.collect(::onAppsChanged) }
-        lifecycleScope.launch { settings.settings.collect(::onSettingsChanged) }
+            ThemeManager.apply(this, settings.get())
+            super.onCreate(savedInstanceState)
+
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+
+            binding = ActivityLauncherBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+
+            widgetManager = WidgetManager(this)
+
+            ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+                insets
+            }
+
+            setupWorkspace()
+            setupDock()
+            setupGestures()
+            setupClock()
+            setupBack()
+
+            lifecycleScope.launch { appManager.load() }
+            lifecycleScope.launch { appManager.apps.collect(::onAppsChanged) }
+            lifecycleScope.launch { settings.settings.collect(::onSettingsChanged) }
+        } catch (t: Throwable) {
+            try {
+                super.onCreate(savedInstanceState)
+            } catch (_: Throwable) {
+            }
+            saveCrash(t)
+            showCrashDialog(t.stackTraceToString())
+        }
     }
 
     override fun onStart() {
@@ -362,19 +377,45 @@ class LauncherActivity : AppCompatActivity() {
 
     private fun dp(value: Int): Int = (resources.displayMetrics.density * value).toInt()
 
-    /** Se c'è un crash.log (da un avvio fallito) lo mostra e lo cancella. */
-    private fun showCrashReportIfPresent() {
+    /** Se c'è un crash.log (da un avvio fallito) lo mostra e blocca l'avvio. */
+    private fun showCrashReportIfPresent(): Boolean {
         val dir = getExternalFilesDir(null) ?: filesDir
         val file = File(dir, "crash.log")
-        if (!file.exists()) return
-        val text = try { file.readText() } catch (_: Exception) { return }
+        if (!file.exists()) return false
+        val text = try { file.readText() } catch (_: Exception) { return false }
         file.delete()
-        android.app.AlertDialog.Builder(this)
-            .setTitle("Errore all'avvio")
-            .setMessage(text.take(2000))
-            .setPositiveButton("OK", null)
-            .setCancelable(false)
-            .show()
+        showCrashDialog(text)
+        return true
+    }
+
+    private fun saveCrash(t: Throwable) {
+        try {
+            val dir = getExternalFilesDir(null) ?: filesDir
+            PrintWriter(File(dir, "crash.log")).use { writer ->
+                writer.println("=== Crash ${System.currentTimeMillis()} ===")
+                t.printStackTrace(writer)
+            }
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun showCrashDialog(text: String) {
+        try {
+            val tv = android.widget.TextView(this).apply {
+                this.text = text
+                textIsSelectable = true
+                setTextIsSelectable(true)
+                setPadding(dp(16), dp(12), dp(16), dp(12))
+            }
+            val sv = android.widget.ScrollView(this).apply { addView(tv) }
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Errore all'avvio")
+                .setView(sv)
+                .setPositiveButton("OK", null)
+                .setCancelable(false)
+                .show()
+        } catch (_: Throwable) {
+        }
     }
 
     companion object {
