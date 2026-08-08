@@ -37,7 +37,7 @@ class DockView @JvmOverloads constructor(
                 val d = event.localState
                 return d is com.nubia.launcher.home.workspace.DragData && d.packageName.isNotEmpty()
             }
-            android.view.DragEvent.ACTION_DRAG_DROP -> {
+            android.view.DragEvent.ACTION_DROP -> {
                 val d = event.localState as? com.nubia.launcher.home.workspace.DragData ?: return false
                 if (d.packageName.isEmpty()) return false
                 onDockDrop?.invoke(d.packageName)

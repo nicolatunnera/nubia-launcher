@@ -89,6 +89,27 @@
     <string name="toast_wallpaper_failed">Impossibile salvare l&#8217;immagine</string>
     <string name="toast_wallpaper_removed">Sfondo personalizzato rimosso</string>
 
+    <!-- Pannello notifiche in-app -->
+    <string name="panel_title">Pannello notifiche</string>
+    <string name="panel_clear">Cancella tutto</string>
+    <string name="panel_notifications">Notifiche</string>
+    <string name="qs_wifi">Wi-Fi</string>
+    <string name="qs_bluetooth">Bluetooth</string>
+    <string name="qs_dnd">Non disturbare</string>
+    <string name="qs_flashlight">Torcia</string>
+    <string name="qs_move_start">Sposta all&#8217;inizio</string>
+    <string name="qs_move_end">Sposta alla fine</string>
+    <string name="qs_hide">Nascondi interruttore</string>
+    <string name="qs_hidden">Interruttore nascosto</string>
+    <string name="qs_move_hint">Trascina per riordinare</string>
+    <string name="settings_notif_panel">Pannello notifiche</string>
+    <string name="settings_notif_panel_summary">Interruttori rapidi e notifiche con swipe in giù sulla home</string>
+    <string name="settings_notif_access">Accesso alle notifiche</string>
+    <string name="settings_notif_access_summary">Consenti al launcher di leggere e mostrare le notifiche</string>
+    <string name="settings_qs_order">Ordina interruttori</string>
+    <string name="settings_qs_order_summary">Trascina per riordinare, usa lo switch per mostrare o nascondere</string>
+    <string name="settings_qs_swipe">Swipe in giù apre il pannello</string>
+
     <!-- Widget -->
     <string name="widget_host_title">Nubia Launcher (Widget)</string>
 </resources>

@@ -15,6 +15,7 @@ import com.nubia.launcher.LauncherApplication
 import com.nubia.launcher.R
 import com.nubia.launcher.data.WallpaperStore
 import com.nubia.launcher.databinding.ActivitySettingsBinding
+import com.nubia.launcher.notification.QuickSettingsActivity
 import com.nubia.launcher.theme.ThemeManager
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -99,6 +100,14 @@ class SettingsActivity : AppCompatActivity() {
                             .settings.setCustomWallpaper("")
                         Toast.makeText(context, R.string.toast_wallpaper_removed, Toast.LENGTH_SHORT).show()
                     }
+                    return true
+                }
+                "notif_access" -> {
+                    startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+                    return true
+                }
+                "qs_order" -> {
+                    startActivity(Intent(requireContext(), QuickSettingsActivity::class.java))
                     return true
                 }
             }

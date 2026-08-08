@@ -124,7 +124,7 @@ class Workspace @JvmOverloads constructor(
             }
             DragEvent.ACTION_DRAG_ENTERED, DragEvent.ACTION_DRAG_LOCATION -> removeZone.alpha = 1f
             DragEvent.ACTION_DRAG_EXITED -> removeZone.alpha = 0.65f
-            DragEvent.ACTION_DRAG_DROP -> {
+            DragEvent.ACTION_DROP -> {
                 val data = event.localState as? DragData
                 return if (data != null) {
                     onItemRemove?.invoke(data.sourceIndex)
@@ -149,7 +149,7 @@ class Workspace @JvmOverloads constructor(
             DragEvent.ACTION_DRAG_STARTED -> return isHomeDrag(event)
             DragEvent.ACTION_DRAG_ENTERED, DragEvent.ACTION_DRAG_LOCATION -> cell.setHighlight(true)
             DragEvent.ACTION_DRAG_EXITED -> cell.setHighlight(false)
-            DragEvent.ACTION_DRAG_DROP -> {
+            DragEvent.ACTION_DROP -> {
                 cell.setHighlight(false)
                 val data = event.localState as? DragData ?: return false
                 val cellIndex = cell.cellIndexAt(event.x, event.y)

@@ -127,6 +127,26 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:key="category_notifications"
+        android:title="@string/settings_notif_panel">
+
+        <Preference
+            android:key="notif_access"
+            android:title="@string/settings_notif_access"
+            android:summary="@string/settings_notif_access_summary" />
+
+        <Preference
+            android:key="qs_order"
+            android:title="@string/settings_qs_order"
+            android:summary="@string/settings_qs_order_summary" />
+
+        <SwitchPreferenceCompat
+            android:key="panel_swipe"
+            android:title="@string/settings_qs_swipe"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:key="category_wallpaper"
         android:title="@string/category_wallpaper">
 

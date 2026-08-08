@@ -11,6 +11,18 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Pannello notifiche in-app -->
+    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -52,6 +64,23 @@
             android:name=".settings.SettingsActivity"
             android:exported="false"
             android:label="@string/settings_title" />
+
+        <!-- Ordinamento interruttori rapidi -->
+        <activity
+            android:name=".notification.QuickSettingsActivity"
+            android:exported="false"
+            android:label="@string/settings_qs_order" />
+
+        <!-- Ascolta le notifiche di sistema per il pannello in-app -->
+        <service
+            android:name=".notification.NotificationListener"
+            android:exported="true"
+            android:label="@string/settings_notif_panel"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
         <!-- Pagina di segnalazione errori (tema di sistema: non può fallire) -->
         <activity

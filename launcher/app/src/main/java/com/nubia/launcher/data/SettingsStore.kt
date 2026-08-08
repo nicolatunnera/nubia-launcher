@@ -23,7 +23,8 @@ data class LauncherSettings(
     val notificationBadges: Boolean = true,
     val iconShape: Int = SHAPE_ROUNDED,
     val dockItems: Int = 5,
-    val customWallpaper: String = ""
+    val customWallpaper: String = "",
+    val panelSwipe: Boolean = true
 ) {
     val cellCount: Int get() = columns * rows
 
@@ -74,7 +75,8 @@ class SettingsStore(context: Context) {
         notificationBadges = prefs.getBoolean(KEY_NOTIFICATION_BADGES, true),
         iconShape = prefs.getString(KEY_ICON_SHAPE, "0")?.toIntOrNull() ?: LauncherSettings.SHAPE_ROUNDED,
         dockItems = prefs.getString(KEY_DOCK_ITEMS, "5")?.toIntOrNull() ?: 5,
-        customWallpaper = prefs.getString(KEY_CUSTOM_WALLPAPER, "") ?: ""
+        customWallpaper = prefs.getString(KEY_CUSTOM_WALLPAPER, "") ?: "",
+        panelSwipe = prefs.getBoolean(KEY_PANEL_SWIPE, true)
     )
 
     /** Imposta un'immagine come sfondo personalizzato (path del file). */
@@ -101,5 +103,6 @@ class SettingsStore(context: Context) {
         const val KEY_ICON_SHAPE = "icon_shape"
         const val KEY_DOCK_ITEMS = "dock_items"
         const val KEY_CUSTOM_WALLPAPER = "custom_wallpaper"
+        const val KEY_PANEL_SWIPE = "panel_swipe"
     }
 }

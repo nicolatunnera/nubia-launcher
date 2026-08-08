@@ -43,6 +43,7 @@ import com.nubia.launcher.home.workspace.toHomeScreenConfig
 import com.nubia.launcher.model.AppInfo
 import com.nubia.launcher.model.HomeItem
 import com.nubia.launcher.notification.NotificationBadgeHelper
+import com.nubia.launcher.notification.NotificationPanelFragment
 import com.nubia.launcher.settings.SettingsActivity
 import com.nubia.launcher.theme.ThemeManager
 import com.nubia.launcher.util.ShortcutUtils
@@ -252,11 +253,28 @@ class LauncherActivity : AppCompatActivity() {
         gestureController.onSwipeUp = {
             if (settings.get().gestureDrawer) openDrawer()
         }
+        gestureController.onSwipeDown = {
+            val drawerOpen = supportFragmentManager.findFragmentByTag(AllAppsFragment.TAG) != null
+            val panelOpen = supportFragmentManager.findFragmentByTag(NotificationPanelFragment.TAG) != null
+            if (!drawerOpen && !panelOpen && settings.get().panelSwipe) {
+                openNotificationPanel()
+            }
+        }
 
         binding.root.setOnLongClickListener {
             showEmptyMenu(it)
             true
         }
+    }
+
+    private fun openNotificationPanel() {
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                android.R.anim.fade_in, android.R.anim.fade_out,
+                android.R.anim.fade_in, android.R.anim.fade_out
+            )
+            .add(android.R.id.content, NotificationPanelFragment(), NotificationPanelFragment.TAG)
+            .commit()
     }
 
     /** Inoltra tutti i tocchi al riconoscitore gesti (vede anche i tocchi sulle icone). */
@@ -602,7 +620,7 @@ class LauncherActivity : AppCompatActivity() {
     private fun renameFolder(folder: HomeItem.Folder) {
         val input = EditText(this)
         input.setText(folder.name)
-        input.hint = R.string.menu_folder_name
+        input.hint = getString(R.string.menu_folder_name)
         AlertDialog.Builder(this)
             .setTitle(R.string.menu_rename)
             .setView(input)
