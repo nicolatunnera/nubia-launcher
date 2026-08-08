@@ -74,7 +74,8 @@ object QuickToggleActions {
         val adapter = BluetoothAdapter.getDefaultAdapter() ?: return false
         return try {
             @Suppress("DEPRECATION")
-            val ok = adapter.setEnabled(!bluetoothOn(context))
+            val target = !adapter.isEnabled
+            val ok = if (target) adapter.enable() else adapter.disable()
             if (!ok) openBluetoothSettings(context)
             ok
         } catch (_: Exception) {
@@ -89,7 +90,7 @@ object QuickToggleActions {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE)
             as? android.app.NotificationManager ?: return false
         return try {
-            nm.currentInterruptionFilter == android.app.NotificationManager.IMPORTANCE_NONE
+            nm.currentInterruptionFilter == android.app.NotificationManager.INTERRUPTION_FILTER_NONE
         } catch (_: Exception) {
             false
         }
@@ -100,9 +101,9 @@ object QuickToggleActions {
             as? android.app.NotificationManager ?: return false
         return try {
             val target = if (dndOn(context)) {
-                android.app.NotificationManager.IMPORTANCE_ALL
+                android.app.NotificationManager.INTERRUPTION_FILTER_ALL
             } else {
-                android.app.NotificationManager.IMPORTANCE_NONE
+                android.app.NotificationManager.INTERRUPTION_FILTER_NONE
             }
             nm.setInterruptionFilter(target)
             true
@@ -114,23 +115,20 @@ object QuickToggleActions {
 
     // ----------------------------------------------------------- Torcia
 
-    fun flashlightOn(context: Context): Boolean {
-        val cm = cameraManager(context) ?: return false
-        return try {
-            val id = cm.cameraIdList.firstOrNull() ?: return false
-            cm.isTorchModeEnabled(id)
-        } catch (_: Exception) {
-            false
-        }
-    }
+    @Volatile
+    private var torchState = false
+
+    fun flashlightOn(context: Context): Boolean = torchState
 
     private fun toggleFlashlight(context: Context): Boolean {
         val cm = cameraManager(context) ?: return false
         return try {
             val id = cm.cameraIdList.firstOrNull() ?: return false
-            cm.setTorchMode(id, !cm.isTorchModeEnabled(id))
+            torchState = !torchState
+            cm.setTorchMode(id, torchState)
             true
         } catch (_: Exception) {
+            torchState = false
             false
         }
     }
@@ -198,12 +196,7 @@ object QuickToggleActions {
 
     private fun openBluetoothSettings(context: Context) {
         try {
-            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                Intent(Settings.Panel.ACTION_BLUETOOTH)
-            } else {
-                Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-            }
-            context.startActivity(intent)
+            context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
         } catch (_: Exception) {
         }
     }
