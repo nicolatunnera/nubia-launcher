@@ -501,31 +501,41 @@ class LauncherActivity : AppCompatActivity() {
         }
     }
 
-    private fun decodeCustomWallpaper(path: String): Bitmap? = try {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(path, bounds)
-        val w = bounds.outWidth
-        val h = bounds.outHeight
-        if (w <= 0 || h <= 0) return null
-        var sample = 1
-        val maxDim = maxOf(
-            resources.displayMetrics.widthPixels,
-            resources.displayMetrics.heightPixels
-        ).coerceAtLeast(1080)
-        while (w / (sample * 2) >= maxDim && h / (sample * 2) >= maxDim) sample *= 2
-        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-        BitmapFactory.decodeFile(path, opts)
-    } catch (_: Throwable) {
-        null
+    private fun decodeCustomWallpaper(path: String): Bitmap? {
+        return try {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            val w = bounds.outWidth
+            val h = bounds.outHeight
+            if (w <= 0 || h <= 0) {
+                null
+            } else {
+                var sample = 1
+                val maxDim = maxOf(
+                    resources.displayMetrics.widthPixels,
+                    resources.displayMetrics.heightPixels
+                ).coerceAtLeast(1080)
+                while (w / (sample * 2) >= maxDim && h / (sample * 2) >= maxDim) sample *= 2
+                val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+                BitmapFactory.decodeFile(path, opts)
+            }
+        } catch (_: Throwable) {
+            null
+        }
     }
 
-    private fun decodeSystemWallpaper(): Bitmap? = try {
-        val wallpaper = WallpaperManager.getInstance(this)
-        val drawable = wallpaper.drawable ?: return null
-        val dm = resources.displayMetrics
-        drawable.toBitmap(dm.widthPixels.coerceAtLeast(1), dm.heightPixels.coerceAtLeast(1))
-    } catch (_: Throwable) {
-        null
+    private fun decodeSystemWallpaper(): Bitmap? {
+        return try {
+            val drawable = WallpaperManager.getInstance(this).drawable
+            if (drawable == null) {
+                null
+            } else {
+                val dm = resources.displayMetrics
+                drawable.toBitmap(dm.widthPixels.coerceAtLeast(1), dm.heightPixels.coerceAtLeast(1))
+            }
+        } catch (_: Throwable) {
+            null
+        }
     }
 
     private fun refreshWorkspace() {
