@@ -51,6 +51,21 @@ class WidgetManager(private val context: Context) {
         return widget
     }
 
+    /** Ricrea la vista di un widget persistito (es. al riavvio del launcher). */
+    fun restoreWidget(appWidgetId: Int): HomeItem.Widget? {
+        return try {
+            val info = appWidgetManager.getAppWidgetInfo(appWidgetId) ?: run {
+                widgetHost.deleteAppWidgetId(appWidgetId)
+                return null
+            }
+            val hostView = widgetHost.createView(context, appWidgetId, info)
+            hostView.setAppWidget(appWidgetId, info)
+            HomeItem.Widget(id = "widget_$appWidgetId", appWidgetId = appWidgetId, hostView = hostView)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun removeWidget(item: HomeItem.Widget) {
         (item.hostView.parent as? ViewGroup)?.removeView(item.hostView)
         widgetHost.deleteAppWidgetId(item.appWidgetId)

@@ -22,10 +22,30 @@ class DockView @JvmOverloads constructor(
     var onItemClick: ((AppInfo) -> Unit)? = null
     var onItemLongClick: ((AppInfo, View) -> Boolean)? = null
     var onDrawerClick: (() -> Unit)? = null
+    var onDockDrop: ((String) -> Unit)? = null
 
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER
+        setOnDragListener { _, event -> handleDrag(event) }
+    }
+
+    /** Riceve il rilascio di un'app trascinata dalla home per aggiungerla al dock. */
+    private fun handleDrag(event: android.view.DragEvent): Boolean {
+        when (event.action) {
+            android.view.DragEvent.ACTION_DRAG_STARTED -> {
+                val d = event.localState
+                return d is com.nubia.launcher.home.workspace.DragData && d.packageName.isNotEmpty()
+            }
+            android.view.DragEvent.ACTION_DRAG_DROP -> {
+                val d = event.localState as? com.nubia.launcher.home.workspace.DragData ?: return false
+                if (d.packageName.isEmpty()) return false
+                onDockDrop?.invoke(d.packageName)
+                return true
+            }
+            android.view.DragEvent.ACTION_DRAG_ENDED -> Unit
+        }
+        return true
     }
 
     fun setApps(

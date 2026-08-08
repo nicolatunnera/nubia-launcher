@@ -1,6 +1,7 @@
 package com.nubia.launcher.home
 
 import android.Manifest
+import android.content.ClipData
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -11,11 +12,13 @@ import android.view.Menu
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -26,12 +29,16 @@ import com.nubia.launcher.LauncherApplication
 import com.nubia.launcher.R
 import com.nubia.launcher.databinding.ActivityLauncherBinding
 import com.nubia.launcher.data.AppManager
+import com.nubia.launcher.data.HomeItemsStore
 import com.nubia.launcher.data.LauncherSettings
+import com.nubia.launcher.data.ParsedHomeItem
 import com.nubia.launcher.data.SettingsStore
 import com.nubia.launcher.data.WallpaperStore
 import com.nubia.launcher.home.dock.DockView
 import com.nubia.launcher.home.drawer.AllAppsFragment
 import com.nubia.launcher.home.gesture.GestureController
+import com.nubia.launcher.home.workspace.DragData
+import com.nubia.launcher.home.workspace.Workspace
 import com.nubia.launcher.home.workspace.toHomeScreenConfig
 import com.nubia.launcher.model.AppInfo
 import com.nubia.launcher.model.HomeItem
@@ -69,10 +76,16 @@ class LauncherActivity : AppCompatActivity() {
 
     private var lastThemeKey: Pair<Int, Int>? = null
     private var lastGrid: Pair<Int, Int>? = null
-    private var lastDock: Pair<Int, Int>? = null
+    private var lastDock: Int? = null
     private var lastWallpaper: String? = null
 
     private var badges: Map<String, Int> = emptyMap()
+
+    private val homeStore: HomeItemsStore by lazy { HomeItemsStore(this) }
+    private val dockComponents: MutableList<String> = mutableListOf()
+    private var persistedDockLoaded = false
+    private var lastDragIndex = -1
+    private var lastDragAnchor: View? = null
 
     private val wallpaperPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -171,6 +184,7 @@ class LauncherActivity : AppCompatActivity() {
             val widget = widgetManager.consumePickedWidget(data)
             if (widget != null) {
                 homeItems.add(widget)
+                persistHomeItems()
                 refreshWorkspace()
             }
         }
@@ -183,11 +197,38 @@ class LauncherActivity : AppCompatActivity() {
             when (item) {
                 is HomeItem.App -> appManager.launch(item.appInfo)
                 is HomeItem.Widget -> Unit
+                is HomeItem.Folder -> openFolder(item)
             }
         }
-        binding.workspace.onItemLongClick = { item, view ->
-            showItemMenu(item, view)
-            true
+        binding.workspace.onItemDragStart = { index, item, view ->
+            if (item is HomeItem.Widget) {
+                showItemMenu(item, view)
+                false
+            } else {
+                lastDragIndex = index
+                lastDragAnchor = view
+                val pkg = (item as? HomeItem.App)?.appInfo?.packageName.orEmpty()
+                val data = DragData(index, pkg)
+                view.startDragAndDrop(
+                    ClipData.newPlainText(Workspace.DRAG_MIME, ""),
+                    View.DragShadowBuilder(view),
+                    data,
+                    View.DRAG_FLAG_GLOBAL
+                )
+                true
+            }
+        }
+        binding.workspace.onItemDrop = { source, target ->
+            handleDrop(source, target)
+        }
+        binding.workspace.onItemRemove = { index ->
+            removeHomeItem(index)
+        }
+        binding.workspace.onItemDropFailed = { index ->
+            val item = homeItems.getOrNull(index)
+            if (item != null) {
+                showItemMenu(item, lastDragAnchor ?: binding.workspace)
+            }
         }
         binding.workspace.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -203,6 +244,7 @@ class LauncherActivity : AppCompatActivity() {
             true
         }
         binding.dock.onDrawerClick = { openDrawer() }
+        binding.dock.onDockDrop = { pkg -> handleDockDrop(pkg) }
     }
 
     private fun setupGestures() {
@@ -267,17 +309,50 @@ class LauncherActivity : AppCompatActivity() {
     private fun onAppsChanged(apps: List<AppInfo>) {
         lastApps = apps
         if (apps.isEmpty()) return
-        val s = settings.get()
-        binding.dock.setApps(
-            DockView.pickDockApps(apps, s.dockItems),
-            s.dockIconSizeDp,
-            s.showLabels,
-            s.iconShape,
-            s.dockItems
-        )
+        loadDockIfNeeded(apps)
+        refreshDock()
         refreshBadges()
-        buildHomeItems(apps)
+        ensureHomeItemsPopulated()
         refreshWorkspace()
+    }
+
+    /** Carica il dock persistito (o lo inizializza con le app predefinite). */
+    private fun loadDockIfNeeded(apps: List<AppInfo>) {
+        if (persistedDockLoaded) return
+        persistedDockLoaded = true
+        val persisted = homeStore.loadDock()
+        dockComponents.clear()
+        if (persisted.isNotEmpty()) {
+            dockComponents.addAll(persisted)
+        } else {
+            DockView.pickDockApps(apps, settings.get().dockItems)
+                .forEach { dockComponents.add(it.key) }
+        }
+    }
+
+    private fun refreshDock() {
+        val s = settings.get()
+        val apps = dockComponents.mapNotNull { c -> lastApps.firstOrNull { it.key == c } }
+        binding.dock.setApps(apps, s.dockIconSizeDp, s.showLabels, s.iconShape, s.dockItems)
+    }
+
+    private fun persistDock() {
+        homeStore.saveDock(dockComponents)
+    }
+
+    /** Aggiunge un'app al dock (dalla home tramite drag). */
+    private fun handleDockDrop(pkg: String) {
+        if (pkg in dockComponents) return
+        dockComponents.add(pkg)
+        persistDock()
+        refreshDock()
+        val idx = homeItems.indexOfFirst { it is HomeItem.App && it.appInfo.key == pkg }
+        if (idx >= 0) {
+            homeItems.removeAt(idx)
+            persistHomeItems()
+            refreshWorkspace()
+        }
+        Toast.makeText(this, R.string.toast_added_dock, Toast.LENGTH_SHORT).show()
     }
 
     private fun refreshBadges() {
@@ -289,20 +364,63 @@ class LauncherActivity : AppCompatActivity() {
         binding.workspace.badges = badges
     }
 
-    private fun buildHomeItems(allApps: List<AppInfo>) {
-        val widgets = homeItems.filterIsInstance<HomeItem.Widget>()
-        homeItems.clear()
+    /** Popola la home una sola volta (da persistenza o auto-riempimento). */
+    private fun ensureHomeItemsPopulated() {
+        if (homeItems.isNotEmpty()) return
+        val persisted = homeStore.loadItems()
+        if (persisted.isNotEmpty()) {
+            resolvePersisted(persisted)
+        } else {
+            autoFillHome()
+        }
+        persistHomeItems()
+    }
 
+    private fun autoFillHome() {
         val s = settings.get()
-        val dockPkgs = DockView.pickDockApps(allApps, s.dockItems).mapTo(HashSet()) { it.packageName }
+        val dockKeys = dockComponents.toSet()
         val perPage = s.cellCount
-
-        val fill = (allApps.filterNot { it.packageName in dockPkgs } + allApps)
+        val fill = (lastApps.filterNot { it.key in dockKeys } + lastApps)
             .distinctBy { it.key }
             .take(perPage)
-
         fill.forEach { homeItems.add(HomeItem.App(it.key, it)) }
-        homeItems.addAll(widgets)
+    }
+
+    private fun resolvePersisted(items: List<ParsedHomeItem>) {
+        items.forEach { parsed ->
+            when (parsed.type) {
+                "app" -> {
+                    lastApps.firstOrNull { it.key == parsed.component }
+                        ?.let { homeItems.add(HomeItem.App(it.key, it)) }
+                }
+                "widget" -> {
+                    widgetManager.restoreWidget(parsed.appWidgetId)?.let { homeItems.add(it) }
+                }
+                "folder" -> {
+                    val folder = HomeItem.Folder("folder_${System.currentTimeMillis()}")
+                    folder.name = parsed.name.ifBlank { "Cartella" }
+                    parsed.children.forEach { child ->
+                        lastApps.firstOrNull { it.key == child }?.let { folder.apps.add(it) }
+                    }
+                    if (folder.apps.isNotEmpty()) homeItems.add(folder)
+                }
+            }
+        }
+    }
+
+    private fun persistHomeItems() {
+        val parsed = homeItems.map { item ->
+            when (item) {
+                is HomeItem.App -> ParsedHomeItem("app", component = item.appInfo.key)
+                is HomeItem.Widget -> ParsedHomeItem("widget", appWidgetId = item.appWidgetId)
+                is HomeItem.Folder -> ParsedHomeItem(
+                    "folder",
+                    name = item.name,
+                    children = item.apps.map { it.key }
+                )
+            }
+        }
+        homeStore.saveItems(parsed)
     }
 
     private fun onSettingsChanged(s: LauncherSettings) {
@@ -318,16 +436,9 @@ class LauncherActivity : AppCompatActivity() {
         binding.searchBar.visibility = if (s.searchBar) View.VISIBLE else View.GONE
         binding.dock.applyIconSettings(s.dockIconSizeDp, s.showLabels, s.iconShape)
 
-        val dockKey = s.dockItems to s.dockIconSizeDp
-        if (lastDock != dockKey) {
-            lastDock = dockKey
-            binding.dock.setApps(
-                DockView.pickDockApps(lastApps, s.dockItems),
-                s.dockIconSizeDp,
-                s.showLabels,
-                s.iconShape,
-                s.dockItems
-            )
+        if (lastDock != s.dockItems) {
+            lastDock = s.dockItems
+            refreshDock()
         }
 
         if (lastWallpaper != s.customWallpaper) {
@@ -338,7 +449,6 @@ class LauncherActivity : AppCompatActivity() {
         val grid = s.columns to s.rows
         if (lastGrid != grid) {
             lastGrid = grid
-            buildHomeItems(lastApps)
             refreshBadges()
         }
         refreshWorkspace()
@@ -429,19 +539,107 @@ class LauncherActivity : AppCompatActivity() {
             }
         }
         homeItems.add(targetIndex, HomeItem.App(app.key, app))
+        persistHomeItems()
         refreshWorkspace()
         Toast.makeText(this, R.string.menu_add_to_home, Toast.LENGTH_SHORT).show()
     }
 
+    // ------------------------------------------------------ drag & drop
+
+    private fun handleDrop(sourceIndex: Int, targetIndex: Int) {
+        if (sourceIndex !in homeItems.indices || targetIndex !in homeItems.indices) return
+        if (sourceIndex == targetIndex) return
+        val source = homeItems[sourceIndex]
+        val target = homeItems[targetIndex]
+        val targetAdj = if (sourceIndex < targetIndex) targetIndex - 1 else targetIndex
+        when {
+            source is HomeItem.App && target is HomeItem.App -> {
+                val folder = HomeItem.Folder("folder_${System.currentTimeMillis()}")
+                folder.apps.add(target.appInfo)
+                folder.apps.add(source.appInfo)
+                if (sourceIndex < targetIndex) {
+                    homeItems.removeAt(sourceIndex)
+                    homeItems[targetIndex - 1] = folder
+                } else {
+                    homeItems.removeAt(sourceIndex)
+                    homeItems[targetIndex] = folder
+                }
+            }
+            source is HomeItem.App && target is HomeItem.Folder -> {
+                target.apps.add(source.appInfo)
+                homeItems.removeAt(sourceIndex)
+            }
+            else -> {
+                val moved = homeItems.removeAt(sourceIndex)
+                homeItems.add(targetAdj, moved)
+            }
+        }
+        persistHomeItems()
+        refreshWorkspace()
+    }
+
+    private fun removeHomeItem(index: Int) {
+        if (index !in homeItems.indices) return
+        val item = homeItems.removeAt(index)
+        if (item is HomeItem.Widget) widgetManager.removeWidget(item)
+        persistHomeItems()
+        refreshWorkspace()
+        Toast.makeText(this, R.string.toast_removed, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openFolder(folder: HomeItem.Folder) {
+        val names = folder.apps.map { it.label }
+        if (names.isEmpty()) return
+        AlertDialog.Builder(this)
+            .setTitle(folder.name)
+            .setItems(names.toTypedArray()) { _, which ->
+                appManager.launch(folder.apps[which])
+            }
+            .setNegativeButton(R.string.drawer_close, null)
+            .show()
+    }
+
+    private fun renameFolder(folder: HomeItem.Folder) {
+        val input = EditText(this)
+        input.setText(folder.name)
+        input.hint = R.string.menu_folder_name
+        AlertDialog.Builder(this)
+            .setTitle(R.string.menu_rename)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                folder.name = input.text.toString().trim().ifBlank { "Cartella" }
+                persistHomeItems()
+                refreshWorkspace()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun removeItemFromHome(item: HomeItem) {
+        val index = homeItems.indexOfFirst { it === item }
+        if (index >= 0) removeHomeItem(index)
+    }
+
     private fun showDockMenu(app: AppInfo, anchor: View) {
         val menu = PopupMenu(this, anchor)
-        menu.menu.add(Menu.NONE, MENU_SHORTCUT, 0, R.string.menu_add_shortcut)
+        menu.menu.add(Menu.NONE, MENU_OPEN, 0, R.string.menu_open)
+            .setIcon(android.R.drawable.ic_menu_view)
+        menu.menu.add(Menu.NONE, MENU_SHORTCUT, 1, R.string.menu_add_shortcut)
             .setIcon(R.drawable.ic_shortcut)
+        menu.menu.add(Menu.NONE, MENU_DOCK_REMOVE, 2, R.string.menu_dock_remove)
+            .setIcon(R.drawable.ic_close)
         menu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                MENU_OPEN -> appManager.launch(app)
                 MENU_SHORTCUT -> {
                     ShortcutUtils.createAppShortcut(this, app)
                     Toast.makeText(this, R.string.toast_shortcut_created, Toast.LENGTH_SHORT).show()
+                }
+                MENU_DOCK_REMOVE -> {
+                    dockComponents.remove(app.key)
+                    persistDock()
+                    refreshDock()
+                    Toast.makeText(this, R.string.toast_removed_dock, Toast.LENGTH_SHORT).show()
                 }
             }
             true
@@ -467,11 +665,7 @@ class LauncherActivity : AppCompatActivity() {
                         MENU_OPEN -> appManager.launch(item.appInfo)
                         MENU_APP_INFO -> appManager.openAppInfo(item.appInfo)
                         MENU_UNINSTALL -> appManager.uninstall(item.appInfo)
-                        MENU_REMOVE -> {
-                            homeItems.remove(item)
-                            refreshWorkspace()
-                            Toast.makeText(this, R.string.toast_removed, Toast.LENGTH_SHORT).show()
-                        }
+                        MENU_REMOVE -> removeItemFromHome(item)
                     }
                     true
                 }
@@ -481,10 +675,23 @@ class LauncherActivity : AppCompatActivity() {
                     .setIcon(R.drawable.ic_close)
                 menu.setOnMenuItemClickListener { menuItem ->
                     if (menuItem.itemId == MENU_REMOVE) {
-                        widgetManager.removeWidget(item)
-                        homeItems.remove(item)
-                        refreshWorkspace()
-                        Toast.makeText(this, R.string.toast_removed, Toast.LENGTH_SHORT).show()
+                        removeItemFromHome(item)
+                    }
+                    true
+                }
+            }
+            is HomeItem.Folder -> {
+                menu.menu.add(Menu.NONE, MENU_OPEN, 0, R.string.menu_open)
+                    .setIcon(android.R.drawable.ic_menu_view)
+                menu.menu.add(Menu.NONE, MENU_RENAME, 1, R.string.menu_rename)
+                    .setIcon(android.R.drawable.ic_menu_edit)
+                menu.menu.add(Menu.NONE, MENU_REMOVE, 2, R.string.menu_remove)
+                    .setIcon(R.drawable.ic_close)
+                menu.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        MENU_OPEN -> openFolder(item)
+                        MENU_RENAME -> renameFolder(item)
+                        MENU_REMOVE -> removeItemFromHome(item)
                     }
                     true
                 }
@@ -561,5 +768,7 @@ class LauncherActivity : AppCompatActivity() {
         private const val MENU_APP_INFO = 7
         private const val MENU_UNINSTALL = 8
         private const val MENU_WALLPAPER_SYSTEM = 9
+        private const val MENU_DOCK_REMOVE = 10
+        private const val MENU_RENAME = 11
     }
 }

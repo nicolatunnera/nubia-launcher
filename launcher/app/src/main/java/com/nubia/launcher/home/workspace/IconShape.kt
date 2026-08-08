@@ -12,16 +12,16 @@ import android.widget.ImageView
  */
 object IconShape {
 
-    fun apply(view: ImageView, shape: Int, sizePx: Int) {
-        when (shape) {
+    fun apply(view: ImageView, iconShape: Int, sizePx: Int, fill: Int = Color.WHITE) {
+        when (iconShape) {
             2 -> { // Nessuna
                 view.clipToOutline = false
                 view.background = null
             }
             1 -> { // Cerchio
                 val bg = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(Color.WHITE)
+                    setShape(GradientDrawable.OVAL)
+                    setColor(fill)
                 }
                 view.background = bg
                 view.outlineProvider = ViewOutlineProvider.BACKGROUND
@@ -30,9 +30,9 @@ object IconShape {
             else -> { // Arrotondata (squircle)
                 val radius = sizePx * 0.22f
                 val bg = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    cornerRadius = radius
-                    setColor(Color.WHITE)
+                    setShape(GradientDrawable.RECTANGLE)
+                    setCornerRadius(radius)
+                    setColor(fill)
                 }
                 view.background = bg
                 view.outlineProvider = ViewOutlineProvider.BACKGROUND

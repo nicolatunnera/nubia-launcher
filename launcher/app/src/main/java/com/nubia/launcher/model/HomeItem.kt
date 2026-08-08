@@ -18,4 +18,10 @@ sealed class HomeItem {
         val appWidgetId: Int,
         val hostView: AppWidgetHostView
     ) : HomeItem()
+
+    /** Cartella con più app (creata trascinando un'icona su un'altra). */
+    class Folder(override val id: String) : HomeItem() {
+        var name: String = "Cartella"
+        val apps: MutableList<AppInfo> = mutableListOf()
+    }
 }

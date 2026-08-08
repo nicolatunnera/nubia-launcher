@@ -1,6 +1,8 @@
 package com.nubia.launcher.home.workspace
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +32,36 @@ class CellLayout @JvmOverloads constructor(
             }
         }
 
+    /** Pagina a cui appartiene questa griglia (usata dal drag & drop). */
+    var pageIndex: Int = 0
+
+    private val cellW get() = (right - left) / columns.coerceAtLeast(1)
+    private val cellH get() = (bottom - top) / rows.coerceAtLeast(1)
+
+    /** Ritorna l'indice di cella (0..columns*rows) dalla posizione del tocco. */
+    fun cellIndexAt(x: Float, y: Float): Int {
+        val col = ((x / cellW).toInt()).coerceIn(0, columns - 1)
+        val row = ((y / cellH).toInt()).coerceIn(0, rows - 1)
+        return row * columns + col
+    }
+
+    /** Evidenzia la griglia durante il drag (zona di rilascio). */
+    fun setHighlight(on: Boolean) {
+        if (on) {
+            val ta = context.theme
+                .obtainStyledAttributes(intArrayOf(androidx.appcompat.R.attr.colorPrimary))
+            val accent = ta.getColor(0, Color.WHITE)
+            ta.recycle()
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = resources.displayMetrics.density * 16f
+                setColor((accent and 0x00FFFFFF) or 0x33000000.toInt())
+            }
+        } else {
+            background = null
+        }
+    }
+
     class GridLayoutParams : LayoutParams {
         var index: Int = 0
 
@@ -55,8 +87,6 @@ class CellLayout @JvmOverloads constructor(
         val w = MeasureSpec.getSize(widthMeasureSpec)
         val h = MeasureSpec.getSize(heightMeasureSpec)
         setMeasuredDimension(w, h)
-        val cellW = w / columns.coerceAtLeast(1)
-        val cellH = h / rows.coerceAtLeast(1)
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             child.measure(
@@ -67,8 +97,6 @@ class CellLayout @JvmOverloads constructor(
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        val cellW = (r - l) / columns.coerceAtLeast(1)
-        val cellH = (b - t) / rows.coerceAtLeast(1)
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             val lp = child.layoutParams as GridLayoutParams

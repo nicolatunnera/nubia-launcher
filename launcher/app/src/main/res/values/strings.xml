@@ -78,8 +78,13 @@
     <string name="menu_wallpaper_system">Sfondo di sistema</string>
     <string name="menu_add_shortcut">Crea scorciatoia</string>
     <string name="menu_remove">Rimuovi</string>
+    <string name="menu_rename">Rinomina cartella</string>
+    <string name="menu_folder_name">Nome cartella</string>
+    <string name="menu_dock_remove">Rimuovi dal dock</string>
     <string name="toast_shortcut_created">Scorciatoia creata</string>
     <string name="toast_removed">Rimosso</string>
+    <string name="toast_added_dock">Aggiunta al dock</string>
+    <string name="toast_removed_dock">Rimossa dal dock</string>
     <string name="toast_wallpaper_saved">Sfondo salvato</string>
     <string name="toast_wallpaper_failed">Impossibile salvare l&#8217;immagine</string>
     <string name="toast_wallpaper_removed">Sfondo personalizzato rimosso</string>
