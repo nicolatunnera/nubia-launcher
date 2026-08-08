@@ -2,12 +2,12 @@
 
     <!-- ===== Tema base (chiaro) ===== -->
     <style name="Theme.NubiaLauncher" parent="Theme.Material3.Light.NoActionBar">
-        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">@drawable/bg_wallpaper_fallback</item>
         <item name="android:windowShowWallpaper">true</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@color/scrim_nav</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightNavigationBar">true</item>
         <item name="colorPrimary">@color/accent_default</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/accent_default</item>
@@ -15,11 +15,12 @@
 
     <!-- ===== Tema base (scuro) ===== -->
     <style name="Theme.NubiaLauncher.Dark" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">@drawable/bg_wallpaper_fallback</item>
         <item name="android:windowShowWallpaper">true</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@color/scrim_nav</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightNavigationBar">false</item>
         <item name="colorPrimary">@color/accent_default</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/accent_default</item>

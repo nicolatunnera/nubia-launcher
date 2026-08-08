@@ -5,16 +5,17 @@
     android:layout_height="match_parent"
     android:background="@android:color/transparent">
 
-    <!-- Sfondo personalizzato (se impostato) -->
+    <!-- Sfondo sempre presente: wallpaper personalizzato, sistema o gradiente -->
     <ImageView
         android:id="@+id/wallpaperBg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@null"
         android:scaleType="centerCrop"
-        android:visibility="gone" />
+        android:src="@drawable/bg_wallpaper_fallback" />
 
     <LinearLayout
+        android:id="@+id/contentRoot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -26,14 +27,14 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/bg_search_bar"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingTop="11dp"
-            android:paddingBottom="11dp">
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp">
 
             <ImageView
                 android:layout_width="20dp"
@@ -42,13 +43,13 @@
                 android:layout_marginEnd="10dp"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_search"
-                android:tint="#E6FFFFFF" />
+                android:tint="@color/search_text" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/search_bar_hint"
-                android:textColor="#CCFFFFFF"
+                android:textColor="@color/search_text"
                 android:textSize="15sp" />
         </LinearLayout>
 
@@ -59,7 +60,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingTop="2dp"
+            android:paddingTop="4dp"
             android:paddingBottom="10dp">
 
             <TextView
@@ -120,20 +121,4 @@
             android:paddingTop="8dp"
             android:paddingBottom="8dp" />
     </LinearLayout>
-
-    <!-- Scrim sfumato in alto per la leggibilità -->
-    <View
-        android:id="@+id/topScrim"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_gravity="top"
-        android:background="@drawable/bg_scrim_top" />
-
-    <!-- Scrim sfumato sotto per la leggibilità del dock -->
-    <View
-        android:id="@+id/bottomScrim"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_gravity="bottom"
-        android:background="@drawable/bg_scrim_bottom" />
 </FrameLayout>

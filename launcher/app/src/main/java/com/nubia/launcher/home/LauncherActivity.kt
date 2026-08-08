@@ -1,9 +1,11 @@
 package com.nubia.launcher.home
 
 import android.Manifest
+import android.app.WallpaperManager
 import android.content.ClipData
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -15,11 +17,13 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupMenu
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -53,10 +57,12 @@ import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** Schermata home: orologio, workspace a pagine, dock e gesti. */
 class LauncherActivity : AppCompatActivity() {
@@ -131,7 +137,9 @@ class LauncherActivity : AppCompatActivity() {
 
             widgetManager = WidgetManager(this)
 
-            ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            // Padding delle barre di sistema solo sul contenuto: lo sfondo
+            // resta full-bleed sotto status/navigation bar.
+            ViewCompat.setOnApplyWindowInsetsListener(binding.contentRoot) { v, insets ->
                 val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
                 v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
                 insets
@@ -472,35 +480,60 @@ class LauncherActivity : AppCompatActivity() {
         refreshWorkspace()
     }
 
-    /** Applica l'immagine di sfondo personalizzata (se presente) sulla home. */
+    /**
+     * Applica lo sfondo della home: prima l'immagine personalizzata, poi lo
+     * sfondo di sistema, infine un gradiente di fallback (già visibile a
+     * partire dal layout). Il decode avviene fuori dal main thread.
+     */
     private fun applyWallpaper() {
         val path = settings.get().customWallpaper
-        if (path.isEmpty()) {
-            binding.wallpaperBg.visibility = View.GONE
-            return
+        lifecycleScope.launch {
+            val bmp = withContext(Dispatchers.IO) {
+                if (path.isNotEmpty()) decodeCustomWallpaper(path) else decodeSystemWallpaper()
+            }
+            if (bmp != null) {
+                binding.wallpaperBg.setImageBitmap(bmp)
+                binding.wallpaperBg.visibility = View.VISIBLE
+                binding.wallpaperBg.animate().cancel()
+                binding.wallpaperBg.alpha = 0f
+                binding.wallpaperBg.animate().alpha(1f).setDuration(300).start()
+            }
         }
-        try {
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            BitmapFactory.decodeFile(path, bounds)
-            val w = bounds.outWidth
-            val h = bounds.outHeight
-            var sample = 1
-            val maxDim = maxOf(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
-            while (w / (sample * 2) >= maxDim && h / (sample * 2) >= maxDim) sample *= 2
-            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-            val bmp = BitmapFactory.decodeFile(path, opts)
-            binding.wallpaperBg.setImageBitmap(bmp)
-            binding.wallpaperBg.visibility = View.VISIBLE
-        } catch (_: Exception) {
-            binding.wallpaperBg.visibility = View.GONE
-        }
+    }
+
+    private fun decodeCustomWallpaper(path: String): Bitmap? = try {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        val w = bounds.outWidth
+        val h = bounds.outHeight
+        if (w <= 0 || h <= 0) return null
+        var sample = 1
+        val maxDim = maxOf(
+            resources.displayMetrics.widthPixels,
+            resources.displayMetrics.heightPixels
+        ).coerceAtLeast(1080)
+        while (w / (sample * 2) >= maxDim && h / (sample * 2) >= maxDim) sample *= 2
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        BitmapFactory.decodeFile(path, opts)
+    } catch (_: Throwable) {
+        null
+    }
+
+    private fun decodeSystemWallpaper(): Bitmap? = try {
+        val wallpaper = WallpaperManager.getInstance(this)
+        val drawable = wallpaper.drawable ?: return null
+        val dm = resources.displayMetrics
+        drawable.toBitmap(dm.widthPixels.coerceAtLeast(1), dm.heightPixels.coerceAtLeast(1))
+    } catch (_: Throwable) {
+        null
     }
 
     private fun refreshWorkspace() {
         val s = settings.get()
         binding.workspace.config = s.toHomeScreenConfig()
         val perPage = s.cellCount
-        val pages = (0 until s.pages.coerceAtLeast(1)).map { page ->
+        val neededPages = ((homeItems.size + perPage - 1) / perPage).coerceAtLeast(s.pages.coerceAtLeast(1))
+        val pages = (0 until neededPages).map { page ->
             homeItems.drop(page * perPage).take(perPage)
         }
         binding.workspace.items = pages
@@ -513,16 +546,17 @@ class LauncherActivity : AppCompatActivity() {
         binding.pageIndicator.removeAllViews()
         val count = binding.workspace.pageCount
         for (i in 0 until count) {
-            val dot = View(this)
+            val dot = TextView(this)
             val size = dp(6)
             dot.layoutParams = LinearLayout.LayoutParams(size, size).apply {
                 setMargins(dp(3), 0, dp(3), 0)
             }
             dot.background = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
-                setColor(0xCCFFFFFF.toInt())
+                setColor(0xE6FFFFFF.toInt())
             }
-            dot.alpha = if (i == binding.workspace.currentItem) 1f else 0.35f
+            dot.setShadowLayer(dp(1).toFloat(), 0f, 1f, 0x66000000)
+            dot.alpha = if (i == binding.workspace.currentItem) 1f else 0.4f
             binding.pageIndicator.addView(dot)
         }
     }

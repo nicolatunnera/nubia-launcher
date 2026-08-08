@@ -97,13 +97,21 @@ class CellLayout @JvmOverloads constructor(
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        val colCount = columns.coerceAtLeast(1)
+        var maxUsedRow = -1
+        for (i in 0 until childCount) {
+            val lp = getChildAt(i).layoutParams as GridLayoutParams
+            maxUsedRow = maxOf(maxUsedRow, lp.index / colCount)
+        }
+        val usedRows = (maxUsedRow + 1).coerceAtLeast(1)
+        val topOffset = ((height - usedRows * cellH) / 2).coerceAtLeast(0)
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             val lp = child.layoutParams as GridLayoutParams
-            val col = lp.index % columns.coerceAtLeast(1)
-            val row = lp.index / columns.coerceAtLeast(1)
+            val col = lp.index % colCount
+            val row = lp.index / colCount
             val left = col * cellW
-            val top = row * cellH
+            val top = topOffset + row * cellH
             child.layout(left, top, left + child.measuredWidth, top + child.measuredHeight)
         }
     }

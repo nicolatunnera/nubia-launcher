@@ -14,8 +14,13 @@
     <color name="drawer_bg">#F5F5F5</color>
     <color name="drawer_bg_dark">#1E1E1E</color>
     <color name="label_shadow">#33000000</color>
-    <color name="scrim_nav">#99000000</color>
 
     <!-- Icone launcher -->
     <color name="ic_launcher_background">#FF1F2430</color>
+
+    <!-- Home: pillole e testo -->
+    <color name="search_pill">#D9FFFFFF</color>
+    <color name="search_text">#99000000</color>
+    <color name="dock_pill">#59000000</color>
+    <color name="dock_stroke">#14FFFFFF</color>
 </resources>
