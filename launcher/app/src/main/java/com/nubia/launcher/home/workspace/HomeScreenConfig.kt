@@ -8,7 +8,8 @@ data class HomeScreenConfig(
     val rows: Int,
     val iconSizeDp: Int,
     val labelSizeSp: Int,
-    val showLabels: Boolean
+    val showLabels: Boolean,
+    val iconShape: Int = 0
 )
 
 fun LauncherSettings.toHomeScreenConfig() = HomeScreenConfig(
@@ -16,5 +17,6 @@ fun LauncherSettings.toHomeScreenConfig() = HomeScreenConfig(
     rows = rows,
     iconSizeDp = iconSizeDp,
     labelSizeSp = labelSizeSp,
-    showLabels = showLabels
+    showLabels = showLabels,
+    iconShape = iconShape
 )

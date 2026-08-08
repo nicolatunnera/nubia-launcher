@@ -27,6 +27,10 @@
     <string name="pref_dock_icon_size_summary">Dimensione delle icone nella barra dock</string>
     <string name="pref_pages_title">Numero di pagine</string>
     <string name="pref_pages_summary">Pagine della schermata home</string>
+    <string name="pref_icon_shape_title">Forma icone</string>
+    <string name="pref_icon_shape_summary">Uniforma le icone delle app alla forma scelta</string>
+    <string name="pref_dock_items_title">App nel dock</string>
+    <string name="pref_dock_items_summary">Numero di app rapide nella barra dock</string>
 
     <!-- Impostazioni: aspetto -->
     <string name="pref_theme_title">Tema</string>
@@ -52,8 +56,12 @@
     <string name="pref_notif_badges_summary">Mostra il numero di notifiche sulle icone</string>
 
     <!-- Impostazioni: sfondo -->
-    <string name="pref_wallpaper_title">Scegli sfondo</string>
+    <string name="pref_wallpaper_title">Sfondo di sistema</string>
     <string name="pref_wallpaper_summary">Apri il selettore sfondo del sistema</string>
+    <string name="pref_custom_wallpaper_title">Scegli immagine</string>
+    <string name="pref_custom_wallpaper_summary">Imposta un&#8217;immagine come sfondo del launcher</string>
+    <string name="pref_remove_wallpaper_title">Rimuovi sfondo personalizzato</string>
+    <string name="pref_remove_wallpaper_summary">Torna allo sfondo di sistema</string>
 
     <!-- Impostazioni: about -->
     <string name="pref_about_version">Versione</string>
@@ -66,11 +74,15 @@
     <string name="menu_uninstall">Disinstalla</string>
     <string name="menu_add_widget">Aggiungi widget</string>
     <string name="menu_settings">Impostazioni</string>
-    <string name="menu_wallpaper">Sfondo</string>
+    <string name="menu_wallpaper">Scegli immagine sfondo</string>
+    <string name="menu_wallpaper_system">Sfondo di sistema</string>
     <string name="menu_add_shortcut">Crea scorciatoia</string>
     <string name="menu_remove">Rimuovi</string>
     <string name="toast_shortcut_created">Scorciatoia creata</string>
     <string name="toast_removed">Rimosso</string>
+    <string name="toast_wallpaper_saved">Sfondo salvato</string>
+    <string name="toast_wallpaper_failed">Impossibile salvare l&#8217;immagine</string>
+    <string name="toast_wallpaper_removed">Sfondo personalizzato rimosso</string>
 
     <!-- Widget -->
     <string name="widget_host_title">Nubia Launcher (Widget)</string>

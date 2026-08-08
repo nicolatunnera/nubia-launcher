@@ -2,6 +2,8 @@ package com.nubia.launcher.settings
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,6 +13,7 @@ import androidx.preference.PreferenceFragmentCompat
 import com.nubia.launcher.BuildConfig
 import com.nubia.launcher.LauncherApplication
 import com.nubia.launcher.R
+import com.nubia.launcher.data.WallpaperStore
 import com.nubia.launcher.databinding.ActivitySettingsBinding
 import com.nubia.launcher.theme.ThemeManager
 import kotlinx.coroutines.flow.collect
@@ -59,6 +62,19 @@ class SettingsActivity : AppCompatActivity() {
 
     class SettingsFragment : PreferenceFragmentCompat() {
 
+        private val wallpaperPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                val context = context ?: return@registerForActivityResult
+                if (WallpaperStore.save(context, uri)) {
+                    (requireActivity().application as LauncherApplication)
+                        .settings.setCustomWallpaper(WallpaperStore.path(context))
+                    Toast.makeText(context, R.string.toast_wallpaper_saved, Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, R.string.toast_wallpaper_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
             findPreference<Preference>("about_version")?.summary =
@@ -66,9 +82,25 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         override fun onPreferenceTreeClick(preference: Preference): Boolean {
-            if (preference.key == "wallpaper") {
-                startActivity(Intent(Intent.ACTION_SET_WALLPAPER))
-                return true
+            when (preference.key) {
+                "wallpaper" -> {
+                    startActivity(Intent(Intent.ACTION_SET_WALLPAPER))
+                    return true
+                }
+                "custom_wallpaper" -> {
+                    wallpaperPicker.launch("image/*")
+                    return true
+                }
+                "remove_wallpaper" -> {
+                    val context = context
+                    if (context != null) {
+                        WallpaperStore.clear(context)
+                        (requireActivity().application as LauncherApplication)
+                            .settings.setCustomWallpaper("")
+                        Toast.makeText(context, R.string.toast_wallpaper_removed, Toast.LENGTH_SHORT).show()
+                    }
+                    return true
+                }
             }
             return super.onPreferenceTreeClick(preference)
         }

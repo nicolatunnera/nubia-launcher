@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.nubia.launcher.R
+import com.nubia.launcher.home.workspace.IconShape
 import com.nubia.launcher.model.AppInfo
 
 /** Barra inferiore (dock) con app rapide. */
@@ -27,15 +28,21 @@ class DockView @JvmOverloads constructor(
         gravity = Gravity.CENTER
     }
 
-    fun setApps(apps: List<AppInfo>, iconSizeDp: Int, showLabels: Boolean) {
+    fun setApps(
+        apps: List<AppInfo>,
+        iconSizeDp: Int,
+        showLabels: Boolean,
+        iconShape: Int = 0,
+        maxItems: Int = MAX_ITEMS
+    ) {
         removeAllViews()
-        apps.take(MAX_ITEMS).forEach { app ->
-            addView(createItem(app, iconSizeDp, showLabels))
+        apps.take(maxItems).forEach { app ->
+            addView(createItem(app, iconSizeDp, showLabels, iconShape))
         }
-        addView(createDrawerButton(iconSizeDp))
+        addView(createDrawerButton(iconSizeDp, iconShape))
     }
 
-    fun applyIconSettings(iconSizeDp: Int, showLabels: Boolean) {
+    fun applyIconSettings(iconSizeDp: Int, showLabels: Boolean, iconShape: Int = 0) {
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             if (child.tag == TAG_DRAWER) continue
@@ -46,6 +53,7 @@ class DockView @JvmOverloads constructor(
                 width = px
                 height = px
             }
+            IconShape.apply(icon, iconShape, px)
             label?.visibility = if (showLabels) View.VISIBLE else View.GONE
             child.layoutParams = child.layoutParams.apply {
                 height = px + if (showLabels) dp(18) else 0
@@ -53,7 +61,7 @@ class DockView @JvmOverloads constructor(
         }
     }
 
-    private fun createItem(app: AppInfo, iconSizeDp: Int, showLabels: Boolean): View {
+    private fun createItem(app: AppInfo, iconSizeDp: Int, showLabels: Boolean, iconShape: Int): View {
         val view = LayoutInflater.from(context).inflate(R.layout.item_dock, this, false)
         val icon = view.findViewById<ImageView>(R.id.dockIcon)
         val label = view.findViewById<TextView>(R.id.dockLabel)
@@ -64,6 +72,7 @@ class DockView @JvmOverloads constructor(
             width = px
             height = px
         }
+        IconShape.apply(icon, iconShape, px)
 
         label.text = app.label
         label.visibility = if (showLabels) View.VISIBLE else View.GONE
@@ -74,11 +83,11 @@ class DockView @JvmOverloads constructor(
         )
         view.setOnClickListener { onItemClick?.invoke(app) }
         view.setOnLongClickListener { onItemLongClick?.invoke(app, it) ?: true }
-        view.background = context.getDrawable(R.drawable.bg_cell)
+        view.foreground = context.getDrawable(R.drawable.bg_cell)
         return view
     }
 
-    private fun createDrawerButton(iconSizeDp: Int): View {
+    private fun createDrawerButton(iconSizeDp: Int, iconShape: Int): View {
         val px = (context.resources.displayMetrics.density * iconSizeDp).toInt()
         val size = (context.resources.displayMetrics.density * (iconSizeDp - 10)).toInt()
         return ImageView(context).apply {
@@ -87,8 +96,9 @@ class DockView @JvmOverloads constructor(
             contentDescription = "Tutte le app"
             layoutParams = LayoutParams(px, px)
             setPadding(size / 4, size / 4, size / 4, size / 4)
+            foreground = context.getDrawable(R.drawable.bg_cell)
+            IconShape.apply(this, iconShape, px)
             setOnClickListener { onDrawerClick?.invoke() }
-            background = context.getDrawable(R.drawable.bg_cell)
         }
     }
 

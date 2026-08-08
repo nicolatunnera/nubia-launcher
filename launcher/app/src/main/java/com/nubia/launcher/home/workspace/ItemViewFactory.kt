@@ -32,6 +32,7 @@ object ItemViewFactory {
             width = px
             height = px
         }
+        IconShape.apply(icon, config.iconShape, px)
 
         label.text = app.label
         label.textSize = config.labelSizeSp.toFloat()
@@ -46,7 +47,7 @@ object ItemViewFactory {
 
         view.setOnClickListener(onClick)
         view.setOnLongClickListener { onLongClick(it) }
-        view.background = context.getDrawable(R.drawable.bg_cell)
+        view.foreground = context.getDrawable(R.drawable.bg_cell)
         return view
     }
 }

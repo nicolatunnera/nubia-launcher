@@ -3,6 +3,7 @@ package com.nubia.launcher.home
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
@@ -14,6 +15,7 @@ import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -26,6 +28,7 @@ import com.nubia.launcher.databinding.ActivityLauncherBinding
 import com.nubia.launcher.data.AppManager
 import com.nubia.launcher.data.LauncherSettings
 import com.nubia.launcher.data.SettingsStore
+import com.nubia.launcher.data.WallpaperStore
 import com.nubia.launcher.home.dock.DockView
 import com.nubia.launcher.home.drawer.AllAppsFragment
 import com.nubia.launcher.home.gesture.GestureController
@@ -66,8 +69,21 @@ class LauncherActivity : AppCompatActivity() {
 
     private var lastThemeKey: Pair<Int, Int>? = null
     private var lastGrid: Pair<Int, Int>? = null
+    private var lastDock: Pair<Int, Int>? = null
+    private var lastWallpaper: String? = null
 
     private var badges: Map<String, Int> = emptyMap()
+
+    private val wallpaperPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            if (WallpaperStore.save(this, uri)) {
+                settings.setCustomWallpaper(WallpaperStore.path(this))
+                Toast.makeText(this, R.string.toast_wallpaper_saved, Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, R.string.toast_wallpaper_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (crashReportExists()) {
@@ -114,6 +130,7 @@ class LauncherActivity : AppCompatActivity() {
             setupBack()
             setupSearchBar()
             requestNotificationPermission()
+            applyWallpaper()
 
             homeReady = true
 
@@ -250,10 +267,13 @@ class LauncherActivity : AppCompatActivity() {
     private fun onAppsChanged(apps: List<AppInfo>) {
         lastApps = apps
         if (apps.isEmpty()) return
+        val s = settings.get()
         binding.dock.setApps(
-            DockView.pickDockApps(apps),
-            settings.get().dockIconSizeDp,
-            settings.get().showLabels
+            DockView.pickDockApps(apps, s.dockItems),
+            s.dockIconSizeDp,
+            s.showLabels,
+            s.iconShape,
+            s.dockItems
         )
         refreshBadges()
         buildHomeItems(apps)
@@ -274,7 +294,7 @@ class LauncherActivity : AppCompatActivity() {
         homeItems.clear()
 
         val s = settings.get()
-        val dockPkgs = DockView.pickDockApps(allApps).mapTo(HashSet()) { it.packageName }
+        val dockPkgs = DockView.pickDockApps(allApps, s.dockItems).mapTo(HashSet()) { it.packageName }
         val perPage = s.cellCount
 
         val fill = (allApps.filterNot { it.packageName in dockPkgs } + allApps)
@@ -296,7 +316,24 @@ class LauncherActivity : AppCompatActivity() {
 
         binding.topBar.visibility = if (s.showClock) View.VISIBLE else View.GONE
         binding.searchBar.visibility = if (s.searchBar) View.VISIBLE else View.GONE
-        binding.dock.applyIconSettings(s.dockIconSizeDp, s.showLabels)
+        binding.dock.applyIconSettings(s.dockIconSizeDp, s.showLabels, s.iconShape)
+
+        val dockKey = s.dockItems to s.dockIconSizeDp
+        if (lastDock != dockKey) {
+            lastDock = dockKey
+            binding.dock.setApps(
+                DockView.pickDockApps(lastApps, s.dockItems),
+                s.dockIconSizeDp,
+                s.showLabels,
+                s.iconShape,
+                s.dockItems
+            )
+        }
+
+        if (lastWallpaper != s.customWallpaper) {
+            lastWallpaper = s.customWallpaper
+            applyWallpaper()
+        }
 
         val grid = s.columns to s.rows
         if (lastGrid != grid) {
@@ -305,6 +342,30 @@ class LauncherActivity : AppCompatActivity() {
             refreshBadges()
         }
         refreshWorkspace()
+    }
+
+    /** Applica l'immagine di sfondo personalizzata (se presente) sulla home. */
+    private fun applyWallpaper() {
+        val path = settings.get().customWallpaper
+        if (path.isEmpty()) {
+            binding.wallpaperBg.visibility = View.GONE
+            return
+        }
+        try {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            val w = bounds.outWidth
+            val h = bounds.outHeight
+            var sample = 1
+            val maxDim = maxOf(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels)
+            while (w / (sample * 2) >= maxDim && h / (sample * 2) >= maxDim) sample *= 2
+            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+            val bmp = BitmapFactory.decodeFile(path, opts)
+            binding.wallpaperBg.setImageBitmap(bmp)
+            binding.wallpaperBg.visibility = View.VISIBLE
+        } catch (_: Exception) {
+            binding.wallpaperBg.visibility = View.GONE
+        }
     }
 
     private fun refreshWorkspace() {
@@ -439,12 +500,15 @@ class LauncherActivity : AppCompatActivity() {
             .setIcon(R.drawable.ic_widget)
         menu.menu.add(Menu.NONE, MENU_WALLPAPER, 1, R.string.menu_wallpaper)
             .setIcon(R.drawable.ic_wallpaper)
-        menu.menu.add(Menu.NONE, MENU_SETTINGS, 2, R.string.menu_settings)
+        menu.menu.add(Menu.NONE, MENU_WALLPAPER_SYSTEM, 2, R.string.menu_wallpaper_system)
+            .setIcon(R.drawable.ic_wallpaper)
+        menu.menu.add(Menu.NONE, MENU_SETTINGS, 3, R.string.menu_settings)
             .setIcon(R.drawable.ic_settings)
         menu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 MENU_WIDGET -> startActivityForResult(widgetManager.buildPickIntent(), REQUEST_PICK_WIDGET)
-                MENU_WALLPAPER -> startActivity(Intent(Intent.ACTION_SET_WALLPAPER))
+                MENU_WALLPAPER -> wallpaperPicker.launch("image/*")
+                MENU_WALLPAPER_SYSTEM -> startActivity(Intent(Intent.ACTION_SET_WALLPAPER))
                 MENU_SETTINGS -> startActivity(Intent(this, SettingsActivity::class.java))
             }
             true
@@ -496,5 +560,6 @@ class LauncherActivity : AppCompatActivity() {
         private const val MENU_OPEN = 6
         private const val MENU_APP_INFO = 7
         private const val MENU_UNINSTALL = 8
+        private const val MENU_WALLPAPER_SYSTEM = 9
     }
 }

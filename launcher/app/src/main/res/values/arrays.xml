@@ -71,4 +71,26 @@
         <item>5 pagine</item>
     </string-array>
 
+    <string-array name="icon_shape_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="icon_shape_entries">
+        <item>Arrotondata</item>
+        <item>Rotonda</item>
+        <item>Nessuna</item>
+    </string-array>
+
+    <string-array name="dock_items_values">
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="dock_items_entries">
+        <item>3 app</item>
+        <item>4 app</item>
+        <item>5 app</item>
+    </string-array>
+
 </resources>

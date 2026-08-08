@@ -53,7 +53,7 @@ class AllAppsFragment : Fragment() {
         val appManager = app.appManager
         val current = settings.get()
 
-        val adapter = AllAppsAdapter(current.iconSizeDp, current.showLabels)
+        val adapter = AllAppsAdapter(current.iconSizeDp, current.showLabels, current.iconShape)
         adapter.onItemClick = { info ->
             appManager.launch(info)
             dismiss()

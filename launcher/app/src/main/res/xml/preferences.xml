@@ -44,6 +44,22 @@
             android:defaultValue="56"
             android:min="40"
             android:max="80" />
+
+        <ListPreference
+            android:key="dock_items"
+            android:title="@string/pref_dock_items_title"
+            android:summary="@string/pref_dock_items_summary"
+            android:entries="@array/dock_items_entries"
+            android:entryValues="@array/dock_items_values"
+            android:defaultValue="5" />
+
+        <ListPreference
+            android:key="icon_shape"
+            android:title="@string/pref_icon_shape_title"
+            android:summary="@string/pref_icon_shape_summary"
+            android:entries="@array/icon_shape_entries"
+            android:entryValues="@array/icon_shape_values"
+            android:defaultValue="0" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -119,6 +135,18 @@
             android:title="@string/pref_wallpaper_title"
             android:summary="@string/pref_wallpaper_summary"
             android:icon="@drawable/ic_wallpaper" />
+
+        <Preference
+            android:key="custom_wallpaper"
+            android:title="@string/pref_custom_wallpaper_title"
+            android:summary="@string/pref_custom_wallpaper_summary"
+            android:icon="@drawable/ic_wallpaper" />
+
+        <Preference
+            android:key="remove_wallpaper"
+            android:title="@string/pref_remove_wallpaper_title"
+            android:summary="@string/pref_remove_wallpaper_summary"
+            android:icon="@drawable/ic_close" />
     </PreferenceCategory>
 
     <PreferenceCategory

@@ -8,12 +8,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.nubia.launcher.R
+import com.nubia.launcher.home.workspace.IconShape
 import com.nubia.launcher.model.AppInfo
 
 /** Griglia di app del cassetto, con filtro di ricerca, badge e long press. */
 class AllAppsAdapter(
     private val iconSizeDp: Int,
-    private val showLabels: Boolean
+    private val showLabels: Boolean,
+    private val iconShape: Int = 0
 ) : RecyclerView.Adapter<AllAppsAdapter.Holder>() {
 
     var onItemClick: ((AppInfo) -> Unit)? = null
@@ -79,6 +81,7 @@ class AllAppsAdapter(
                 width = px
                 height = px
             }
+            IconShape.apply(icon, iconShape, px)
             label.text = app.label
             label.visibility = if (showLabels) View.VISIBLE else View.GONE
 

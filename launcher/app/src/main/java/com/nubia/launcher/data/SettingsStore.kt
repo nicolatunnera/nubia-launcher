@@ -20,7 +20,10 @@ data class LauncherSettings(
     val gestureDrawer: Boolean = true,
     val showClock: Boolean = true,
     val searchBar: Boolean = true,
-    val notificationBadges: Boolean = true
+    val notificationBadges: Boolean = true,
+    val iconShape: Int = SHAPE_ROUNDED,
+    val dockItems: Int = 5,
+    val customWallpaper: String = ""
 ) {
     val cellCount: Int get() = columns * rows
 
@@ -28,6 +31,10 @@ data class LauncherSettings(
         const val MODE_SYSTEM = 0
         const val MODE_LIGHT = 1
         const val MODE_DARK = 2
+
+        const val SHAPE_ROUNDED = 0
+        const val SHAPE_CIRCLE = 1
+        const val SHAPE_NONE = 2
     }
 }
 
@@ -64,8 +71,16 @@ class SettingsStore(context: Context) {
         gestureDrawer = prefs.getBoolean(KEY_GESTURE_DRAWER, true),
         showClock = prefs.getBoolean(KEY_SHOW_CLOCK, true),
         searchBar = prefs.getBoolean(KEY_SEARCH_BAR, true),
-        notificationBadges = prefs.getBoolean(KEY_NOTIFICATION_BADGES, true)
+        notificationBadges = prefs.getBoolean(KEY_NOTIFICATION_BADGES, true),
+        iconShape = prefs.getString(KEY_ICON_SHAPE, "0")?.toIntOrNull() ?: LauncherSettings.SHAPE_ROUNDED,
+        dockItems = prefs.getString(KEY_DOCK_ITEMS, "5")?.toIntOrNull() ?: 5,
+        customWallpaper = prefs.getString(KEY_CUSTOM_WALLPAPER, "") ?: ""
     )
+
+    /** Imposta un'immagine come sfondo personalizzato (path del file). */
+    fun setCustomWallpaper(path: String) {
+        prefs.edit().putString(KEY_CUSTOM_WALLPAPER, path).apply()
+    }
 
     companion object {
         const val PREFS_NAME = "launcher_settings"
@@ -83,5 +98,8 @@ class SettingsStore(context: Context) {
         const val KEY_SHOW_CLOCK = "show_clock"
         const val KEY_SEARCH_BAR = "search_bar"
         const val KEY_NOTIFICATION_BADGES = "notification_badges"
+        const val KEY_ICON_SHAPE = "icon_shape"
+        const val KEY_DOCK_ITEMS = "dock_items"
+        const val KEY_CUSTOM_WALLPAPER = "custom_wallpaper"
     }
 }
