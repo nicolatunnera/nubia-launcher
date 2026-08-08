@@ -13,6 +13,8 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -59,6 +61,12 @@ class NotificationPanelFragment : Fragment() {
 
         binding.root.setOnClickListener { dismiss() }
         binding.shade.setOnClickListener { /* consuma il tocco: non chiude */ }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.shade.setPadding(bars.left, bars.top, bars.right, 0)
+            insets
+        }
 
         binding.panelClose.setOnClickListener { dismiss() }
         binding.panelClear.setOnClickListener { NotificationRepository.clearAll() }
