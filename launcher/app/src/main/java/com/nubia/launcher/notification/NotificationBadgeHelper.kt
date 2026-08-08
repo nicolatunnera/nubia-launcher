@@ -12,7 +12,7 @@ object NotificationBadgeHelper {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nm.activeNotifications
                 .groupingBy { it.packageName }
-                .mapValues { it.value.size }
+                .eachCount()
         } catch (_: Exception) {
             emptyMap()
         }

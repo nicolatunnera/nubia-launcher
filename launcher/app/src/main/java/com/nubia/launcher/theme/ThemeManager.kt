@@ -35,8 +35,9 @@ object ThemeManager {
     fun apply(context: Context, settings: LauncherSettings) {
         val dark = isDark(context, settings)
 
-        if (settings.accent == ACCENT_DYNAMIC && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (context is Activity && DynamicColors.applyToActivityIfAvailable(context)) return
+        if (settings.accent == ACCENT_DYNAMIC && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && context is Activity) {
+            DynamicColors.applyToActivityIfAvailable(context)
+            return
         }
 
         context.setTheme(if (dark) R.style.Theme_NubiaLauncher_Dark else R.style.Theme_NubiaLauncher)
