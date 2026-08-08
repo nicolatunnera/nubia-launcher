@@ -10,7 +10,38 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Barra orologio/data -->
+        <!-- Barra di ricerca -->
+        <LinearLayout
+            android:id="@+id/searchBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_search_bar"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_search"
+                android:tint="#E6FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search_bar_hint"
+                android:textColor="#CCFFFFFF"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!-- At a glance: orologio e data -->
         <LinearLayout
             android:id="@+id/topBar"
             android:layout_width="match_parent"
@@ -73,7 +104,7 @@
             android:paddingBottom="6dp" />
     </LinearLayout>
 
-    <!-- Scrim sfumato in alto per la leggibilità dell'orologio -->
+    <!-- Scrim sfumato in alto per la leggibilità di orologio e ricerca -->
     <View
         android:id="@+id/topScrim"
         android:layout_width="match_parent"

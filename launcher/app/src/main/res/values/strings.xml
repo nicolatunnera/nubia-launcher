@@ -6,6 +6,8 @@
     <string name="search_hint">Cerca app…</string>
     <string name="drawer_closed">Apri cassetto app</string>
     <string name="drawer_empty">Nessuna app trovata</string>
+    <string name="search_bar_hint">Cerca app</string>
+    <string name="drawer_close">Chiudi</string>
 
     <!-- Impostazioni: categorie -->
     <string name="category_layout">Layout</string>
@@ -44,6 +46,10 @@
     <string name="pref_gesture_drawer_summary">Apri il cassetto app scorrendo verso l&#8217;alto dalla home</string>
     <string name="pref_clock_title">Mostra orologio</string>
     <string name="pref_clock_summary">Orologio e data in alto nella schermata home</string>
+    <string name="pref_search_bar_title">Barra di ricerca</string>
+    <string name="pref_search_bar_summary">Mostra la barra di ricerca in alto nella home</string>
+    <string name="pref_notif_badges_title">Badge notifiche</string>
+    <string name="pref_notif_badges_summary">Mostra il numero di notifiche sulle icone</string>
 
     <!-- Impostazioni: sfondo -->
     <string name="pref_wallpaper_title">Scegli sfondo</string>
@@ -54,6 +60,10 @@
     <string name="pref_about_build">Launcher open source per Nubia ZTE Air</string>
 
     <!-- Long press -->
+    <string name="menu_open">Apri</string>
+    <string name="menu_add_to_home">Aggiungi alla home</string>
+    <string name="menu_app_info">Informazioni</string>
+    <string name="menu_uninstall">Disinstalla</string>
     <string name="menu_add_widget">Aggiungi widget</string>
     <string name="menu_settings">Impostazioni</string>
     <string name="menu_wallpaper">Sfondo</string>

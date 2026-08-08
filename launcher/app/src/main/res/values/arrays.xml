@@ -12,6 +12,7 @@
     </string-array>
 
     <string-array name="accent_entries">
+        <item>Automatico (Material You)</item>
         <item>Verde acqua</item>
         <item>Blu</item>
         <item>Viola</item>
@@ -21,6 +22,7 @@
         <item>Rosa</item>
     </string-array>
     <string-array name="accent_values">
+        <item>-1</item>
         <item>0</item>
         <item>1</item>
         <item>2</item>

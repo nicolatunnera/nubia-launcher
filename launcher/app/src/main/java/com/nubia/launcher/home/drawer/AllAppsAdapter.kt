@@ -10,13 +10,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.nubia.launcher.R
 import com.nubia.launcher.model.AppInfo
 
-/** Griglia di app del cassetto, con filtro di ricerca. */
+/** Griglia di app del cassetto, con filtro di ricerca, badge e long press. */
 class AllAppsAdapter(
     private val iconSizeDp: Int,
     private val showLabels: Boolean
 ) : RecyclerView.Adapter<AllAppsAdapter.Holder>() {
 
     var onItemClick: ((AppInfo) -> Unit)? = null
+    var onItemLongClick: ((AppInfo, View) -> Boolean)? = null
+
+    var badges: Map<String, Int> = emptyMap()
 
     private var all: List<AppInfo> = emptyList()
     private var filtered: List<AppInfo> = emptyList()
@@ -59,6 +62,7 @@ class AllAppsAdapter(
 
         private val icon: ImageView = itemView.findViewById(R.id.appIcon)
         private val label: TextView = itemView.findViewById(R.id.appLabel)
+        private val badge: TextView = itemView.findViewById(R.id.appBadge)
 
         init {
             val ta = itemView.context.theme
@@ -77,7 +81,19 @@ class AllAppsAdapter(
             }
             label.text = app.label
             label.visibility = if (showLabels) View.VISIBLE else View.GONE
+
+            val count = badges[app.packageName] ?: 0
+            if (count > 0) {
+                badge.text = if (count > 99) "99+" else count.toString()
+                badge.visibility = View.VISIBLE
+            } else {
+                badge.visibility = View.GONE
+            }
+
             itemView.setOnClickListener { onItemClick?.invoke(app) }
+            itemView.setOnLongClickListener {
+                onItemLongClick?.invoke(app, itemView) ?: true
+            }
             itemView.background = itemView.context.getDrawable(R.drawable.bg_cell)
         }
     }

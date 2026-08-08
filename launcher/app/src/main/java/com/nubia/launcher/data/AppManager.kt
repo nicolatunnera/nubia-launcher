@@ -5,6 +5,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import com.nubia.launcher.model.AppInfo
 import java.text.Collator
 import java.util.Locale
@@ -51,7 +53,31 @@ class AppManager(private val context: Context) {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
-            // L'app non è più disponibile: ignorato nello scheletro.
+            // L'app non è più disponibile: ignorato.
+        }
+    }
+
+    /** Apre la pagina "Informazioni app" del sistema. */
+    fun openAppInfo(app: AppInfo) {
+        try {
+            val intent = Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:${app.packageName}")
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (_: Exception) {
+        }
+    }
+
+    /** Avvia la disinstallazione tramite il sistema (con conferma). */
+    fun uninstall(app: AppInfo) {
+        try {
+            val intent = Intent(
+                Intent.ACTION_UNINSTALL_PACKAGE,
+                Uri.parse("package:${app.packageName}")
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (_: Exception) {
         }
     }
 }

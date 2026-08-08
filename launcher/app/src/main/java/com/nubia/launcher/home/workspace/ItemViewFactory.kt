@@ -17,11 +17,13 @@ object ItemViewFactory {
         app: AppInfo,
         config: HomeScreenConfig,
         onClick: (View) -> Unit,
-        onLongClick: (View) -> Boolean
+        onLongClick: (View) -> Boolean,
+        badgeCount: Int = 0
     ): View {
         val view = LayoutInflater.from(context).inflate(R.layout.item_app_cell, null)
         val icon = view.findViewById<ImageView>(R.id.appIcon)
         val label = view.findViewById<TextView>(R.id.appLabel)
+        val badge = view.findViewById<TextView>(R.id.appBadge)
         val density = context.resources.displayMetrics.density
 
         icon.setImageDrawable(app.icon)
@@ -34,6 +36,13 @@ object ItemViewFactory {
         label.text = app.label
         label.textSize = config.labelSizeSp.toFloat()
         label.visibility = if (config.showLabels) View.VISIBLE else View.GONE
+
+        if (badgeCount > 0) {
+            badge.text = if (badgeCount > 99) "99+" else badgeCount.toString()
+            badge.visibility = View.VISIBLE
+        } else {
+            badge.visibility = View.GONE
+        }
 
         view.setOnClickListener(onClick)
         view.setOnLongClickListener { onLongClick(it) }

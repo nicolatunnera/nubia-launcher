@@ -34,6 +34,13 @@ class Workspace @JvmOverloads constructor(
             pagerAdapter.notifyDataSetChanged()
         }
 
+    /** Contatore notifiche per pacchetto (per i badge sulle icone). */
+    var badges: Map<String, Int> = emptyMap()
+        set(value) {
+            field = value
+            pagerAdapter.notifyDataSetChanged()
+        }
+
     val pageCount: Int get() = pagerAdapter.itemCount
 
     var currentItem: Int
@@ -90,7 +97,7 @@ class Workspace @JvmOverloads constructor(
             cell.columns = config.columns
             cell.rows = config.rows
             cell.removeAllViews()
-            items.getOrElse(position) { emptyList() }.forEachIndexed { index, item ->
+                items.getOrElse(position) { emptyList() }.forEachIndexed { index, item ->
                 val lp = CellLayout.GridLayoutParams(index)
                 when (item) {
                     is HomeItem.App -> {
@@ -99,7 +106,8 @@ class Workspace @JvmOverloads constructor(
                             app = item.appInfo,
                             config = config,
                             onClick = { onItemClick?.invoke(item) },
-                            onLongClick = { onItemLongClick?.invoke(item, it) ?: true }
+                            onLongClick = { onItemLongClick?.invoke(item, it) ?: true },
+                            badgeCount = badges[item.appInfo.packageName] ?: 0
                         )
                         cell.addView(v, lp)
                     }

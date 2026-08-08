@@ -18,7 +18,9 @@ data class LauncherSettings(
     val darkMode: Int = MODE_SYSTEM,
     val accent: Int = 0,
     val gestureDrawer: Boolean = true,
-    val showClock: Boolean = true
+    val showClock: Boolean = true,
+    val searchBar: Boolean = true,
+    val notificationBadges: Boolean = true
 ) {
     val cellCount: Int get() = columns * rows
 
@@ -60,7 +62,9 @@ class SettingsStore(context: Context) {
         darkMode = prefs.getString(KEY_DARK_MODE, "0")?.toIntOrNull() ?: LauncherSettings.MODE_SYSTEM,
         accent = prefs.getString(KEY_ACCENT, "0")?.toIntOrNull() ?: 0,
         gestureDrawer = prefs.getBoolean(KEY_GESTURE_DRAWER, true),
-        showClock = prefs.getBoolean(KEY_SHOW_CLOCK, true)
+        showClock = prefs.getBoolean(KEY_SHOW_CLOCK, true),
+        searchBar = prefs.getBoolean(KEY_SEARCH_BAR, true),
+        notificationBadges = prefs.getBoolean(KEY_NOTIFICATION_BADGES, true)
     )
 
     companion object {
@@ -77,5 +81,7 @@ class SettingsStore(context: Context) {
         const val KEY_ACCENT = "accent"
         const val KEY_GESTURE_DRAWER = "gesture_drawer"
         const val KEY_SHOW_CLOCK = "show_clock"
+        const val KEY_SEARCH_BAR = "search_bar"
+        const val KEY_NOTIFICATION_BADGES = "notification_badges"
     }
 }

@@ -1,6 +1,8 @@
 package com.nubia.launcher.home
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
@@ -30,6 +32,7 @@ import com.nubia.launcher.home.gesture.GestureController
 import com.nubia.launcher.home.workspace.toHomeScreenConfig
 import com.nubia.launcher.model.AppInfo
 import com.nubia.launcher.model.HomeItem
+import com.nubia.launcher.notification.NotificationBadgeHelper
 import com.nubia.launcher.settings.SettingsActivity
 import com.nubia.launcher.theme.ThemeManager
 import com.nubia.launcher.util.ShortcutUtils
@@ -63,6 +66,8 @@ class LauncherActivity : AppCompatActivity() {
 
     private var lastThemeKey: Pair<Int, Int>? = null
     private var lastGrid: Pair<Int, Int>? = null
+
+    private var badges: Map<String, Int> = emptyMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (crashReportExists()) {
@@ -107,6 +112,8 @@ class LauncherActivity : AppCompatActivity() {
             setupGestures()
             setupClock()
             setupBack()
+            setupSearchBar()
+            requestNotificationPermission()
 
             homeReady = true
 
@@ -224,6 +231,20 @@ class LauncherActivity : AppCompatActivity() {
         })
     }
 
+    private fun setupSearchBar() {
+        binding.searchBar.setOnClickListener {
+            openDrawer(focusSearch = true)
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_NOTIFICATIONS)
+        }
+    }
+
     // ---------------------------------------------------------------- data
 
     private fun onAppsChanged(apps: List<AppInfo>) {
@@ -234,8 +255,18 @@ class LauncherActivity : AppCompatActivity() {
             settings.get().dockIconSizeDp,
             settings.get().showLabels
         )
+        refreshBadges()
         buildHomeItems(apps)
         refreshWorkspace()
+    }
+
+    private fun refreshBadges() {
+        badges = if (settings.get().notificationBadges) {
+            NotificationBadgeHelper.refresh(this)
+        } else {
+            emptyMap()
+        }
+        binding.workspace.badges = badges
     }
 
     private fun buildHomeItems(allApps: List<AppInfo>) {
@@ -264,12 +295,14 @@ class LauncherActivity : AppCompatActivity() {
         lastThemeKey = themeKey
 
         binding.topBar.visibility = if (s.showClock) View.VISIBLE else View.GONE
+        binding.searchBar.visibility = if (s.searchBar) View.VISIBLE else View.GONE
         binding.dock.applyIconSettings(s.dockIconSizeDp, s.showLabels)
 
         val grid = s.columns to s.rows
         if (lastGrid != grid) {
             lastGrid = grid
             buildHomeItems(lastApps)
+            refreshBadges()
         }
         refreshWorkspace()
     }
@@ -305,15 +338,38 @@ class LauncherActivity : AppCompatActivity() {
         }
     }
 
-    private fun openDrawer() {
+    private fun openDrawer(focusSearch: Boolean = false) {
         if (supportFragmentManager.findFragmentByTag(AllAppsFragment.TAG) != null) return
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(
                 android.R.anim.fade_in, android.R.anim.fade_out,
                 android.R.anim.fade_in, android.R.anim.fade_out
             )
-            .add(android.R.id.content, AllAppsFragment(), AllAppsFragment.TAG)
+            .add(android.R.id.content, AllAppsFragment.newInstance(focusSearch), AllAppsFragment.TAG)
             .commit()
+    }
+
+    /** Aggiunge un'app alla home (dalla prima pagina con spazio). */
+    fun addAppToHome(app: AppInfo) {
+        if (!::settings.isInitialized) return
+        if (homeItems.any { it is HomeItem.App && it.appInfo.key == app.key }) {
+            Toast.makeText(this, R.string.menu_add_to_home, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val perPage = settings.get().cellCount
+        val pages = settings.get().pages.coerceAtLeast(1)
+        var targetIndex = homeItems.size
+        for (page in 0 until pages) {
+            val start = page * perPage
+            val pageItems = homeItems.drop(start).take(perPage)
+            if (pageItems.size < perPage) {
+                targetIndex = start + pageItems.size
+                break
+            }
+        }
+        homeItems.add(targetIndex, HomeItem.App(app.key, app))
+        refreshWorkspace()
+        Toast.makeText(this, R.string.menu_add_to_home, Toast.LENGTH_SHORT).show()
     }
 
     private fun showDockMenu(app: AppInfo, anchor: View) {
@@ -337,16 +393,19 @@ class LauncherActivity : AppCompatActivity() {
         val menu = PopupMenu(this, anchor)
         when (item) {
             is HomeItem.App -> {
-                menu.menu.add(Menu.NONE, MENU_SHORTCUT, 0, R.string.menu_add_shortcut)
-                    .setIcon(R.drawable.ic_shortcut)
-                menu.menu.add(Menu.NONE, MENU_REMOVE, 1, R.string.menu_remove)
+                menu.menu.add(Menu.NONE, MENU_OPEN, 0, R.string.menu_open)
+                    .setIcon(android.R.drawable.ic_menu_view)
+                menu.menu.add(Menu.NONE, MENU_APP_INFO, 1, R.string.menu_app_info)
+                    .setIcon(android.R.drawable.ic_menu_info_details)
+                menu.menu.add(Menu.NONE, MENU_UNINSTALL, 2, R.string.menu_uninstall)
+                    .setIcon(android.R.drawable.ic_menu_delete)
+                menu.menu.add(Menu.NONE, MENU_REMOVE, 3, R.string.menu_remove)
                     .setIcon(R.drawable.ic_close)
                 menu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
-                        MENU_SHORTCUT -> {
-                            ShortcutUtils.createAppShortcut(this, item.appInfo)
-                            Toast.makeText(this, R.string.toast_shortcut_created, Toast.LENGTH_SHORT).show()
-                        }
+                        MENU_OPEN -> appManager.launch(item.appInfo)
+                        MENU_APP_INFO -> appManager.openAppInfo(item.appInfo)
+                        MENU_UNINSTALL -> appManager.uninstall(item.appInfo)
                         MENU_REMOVE -> {
                             homeItems.remove(item)
                             refreshWorkspace()
@@ -427,11 +486,15 @@ class LauncherActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_PICK_WIDGET = 1001
+        private const val REQ_NOTIFICATIONS = 1002
 
         private const val MENU_WIDGET = 1
         private const val MENU_WALLPAPER = 2
         private const val MENU_SETTINGS = 3
         private const val MENU_SHORTCUT = 4
         private const val MENU_REMOVE = 5
+        private const val MENU_OPEN = 6
+        private const val MENU_APP_INFO = 7
+        private const val MENU_UNINSTALL = 8
     }
 }
